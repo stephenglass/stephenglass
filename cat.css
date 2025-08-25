@@ -1,0 +1,49 @@
+.cat-container {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  margin-left: 16px;
+  position: relative;
+}
+.pixel-cat {
+  image-rendering: pixelated;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 0;
+}
+.cat-tail {
+  transform-origin: left center;
+}
+.cat-container:hover .pixel-cat .cat-eye {
+  fill: #7fffd4;
+}
+.cat-heart-anim {
+  position: absolute;
+  left: 50%;
+  top: 0%;
+  transform: translate(-50%, -60px);
+  font-size: 2rem;
+  opacity: 0;
+  animation: heart-pop 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes heart-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.7);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -30px) scale(1.1);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(-50%, -60px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -80px) scale(0.8);
+  }
+}
