@@ -11,10 +11,10 @@ export default function App() {
     <>
       <main class="mx-auto mt-10 max-w-xl rounded-2xl bg-white p-8 shadow-lg">
         <header class="mb-8 relative">
-          <span class="flex items-center">
-            <h1>Stephen Glass</h1>
+          <div class="flex items-center pr-14">
+            <h1 class="text-4xl font-bold">Stephen Glass</h1>
             <Cat clicks={catClicks} onClicksChange={handleCatClicksChange} />
-          </span>
+          </div>
           {catClicks > 0 && (
             <span class="absolute top-2 right-2 bg-gray-200 text-gray-600 rounded-full px-3 py-1 text-xs shadow-sm font-medium">
               {catClicks}
@@ -95,7 +95,7 @@ export default function App() {
           />
         </section>
       </main>
-      <footer class="my-8 flex justify-center items-center text-gray-500 text-sm">
+      <footer class="mt-8 mb-4 flex justify-center items-center text-gray-500 text-sm">
         <a
           href="https://github.com/stephenglass/minimal-stephenglass"
           target="_blank"
