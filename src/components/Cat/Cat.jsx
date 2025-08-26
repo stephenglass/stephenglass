@@ -3,12 +3,21 @@ import { useRef } from "preact/hooks";
 import Emoji from "./Emoji.jsx";
 import ChatBubble from "./ChatBubble.jsx";
 import { getAnimationByClickCount, getEmojiByClickCount } from "./utils.js";
+import { useReward } from "react-rewards";
 import "./style.css";
 
 export default function Cat({ clicks = 0, onClicksChange }) {
   const clickCountRef = useRef(clicks);
   const catSvgRef = useRef(null);
   const emojiContainerRef = useRef(null);
+
+  const { reward } = useReward("rewardId", "emoji", {
+    elementCount: 10,
+    lifetime: 100,
+    startVelocity: 15,
+    emoji: ["🐈‍⬛"],
+    rotate: false,
+  });
 
   const handleCatClick = () => {
     clickCountRef.current += 1;
@@ -64,10 +73,16 @@ export default function Cat({ clicks = 0, onClicksChange }) {
         }, 800);
       }
     }
+
+    // Show emoji rewards
+    if (clickCountRef.current % 50 === 0) {
+      reward();
+    }
   };
 
   return (
     <span onClick={handleCatClick} class="relative ml-4 flex h-full items-end">
+      <span id="rewardId" />
       <div
         ref={emojiContainerRef}
         class="absolute left-0 top-0 w-full h-full pointer-events-none z-20"
