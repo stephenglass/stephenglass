@@ -5,13 +5,17 @@ import ChatBubble from "./ChatBubble.jsx";
 import { getAnimationByClickCount, getEmojiByClickCount } from "./utils.js";
 import "./style.css";
 
-export default function Cat() {
+export default function Cat({ onClick }) {
   const clickCountRef = useRef(0);
   const catSvgRef = useRef(null);
   const emojiContainerRef = useRef(null);
 
   const handleCatClick = () => {
-    // Increment counter
+    // Trigger callback function
+    if (onClick) {
+      onClick();
+    }
+
     clickCountRef.current += 1;
     const emojiContainer = emojiContainerRef.current;
     if (!emojiContainer) {

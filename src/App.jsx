@@ -1,15 +1,29 @@
 import Cat from "./components/Cat/Cat.jsx";
 import Card from "./components/Card/Card.jsx";
+import { useState } from "preact/hooks";
 
 export default function App() {
+  const [catClicks, setCatClicks] = useState(0);
+
+  const handleCatClick = () => {
+    setCatClicks((prev) => prev + 1);
+  };
+
   return (
     <div class="mx-auto mt-10 max-w-xl rounded-2xl bg-white p-8 shadow-lg">
-      <header class="mb-8">
+      <header class="mb-8 relative">
         <span class="flex items-center">
           <h1>Stephen Glass</h1>
-          <Cat />
+          <Cat onClick={handleCatClick} />
         </span>
-        <p class="mt-1 text-lg text-gray-500">Welcome to my personal landing page</p>
+        {catClicks > 0 && (
+          <span class="absolute top-2 right-2 bg-gray-200 text-gray-600 rounded-full px-3 py-1 text-xs shadow-sm font-medium">
+            {catClicks}
+          </span>
+        )}
+        <p class="mt-1 text-lg text-gray-500">
+          Welcome to my personal landing page
+        </p>
       </header>
       <section class="flex flex-col gap-4">
         <Card
