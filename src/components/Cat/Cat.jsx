@@ -1,6 +1,7 @@
 import { render } from "preact";
 import { useRef } from "preact/hooks";
 import Emoji from "./Emoji.jsx";
+import ChatBubble from "./ChatBubble.jsx";
 import { getEmojiByClickCount } from "./utils.js";
 import "./style.css";
 
@@ -25,8 +26,23 @@ export default function Cat() {
     }
     emojiContainer.appendChild(emojiElement);
     setTimeout(() => {
-      emojiElement.remove();
+      if (emojiContainer.contains(emojiElement)) {
+        emojiElement.remove();
+      }
     }, 1200);
+
+    // Show chat bubble every 15th click
+    if (clickCountRef.current % 15 === 0) {
+      const chatBubbleNode = document.createElement("span");
+      render(<ChatBubble text="meow" />, chatBubbleNode);
+      const parent = emojiContainer.parentNode;
+      parent.appendChild(chatBubbleNode);
+      setTimeout(() => {
+        if (parent.contains(chatBubbleNode)) {
+          chatBubbleNode.remove();
+        }
+      }, 1500);
+    }
   };
 
   return (
