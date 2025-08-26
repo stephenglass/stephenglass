@@ -1,19 +1,17 @@
-import Cat from "./components/Cat.jsx";
-import Card from "./components/Card.jsx";
+import Cat from "./components/Cat/Cat.jsx";
+import Card from "./components/Card/Card.jsx";
 
 export default function App() {
   return (
-    <div class="container">
-      <header class="header-with-cat">
-        <div class="header-content">
-          <h1>
-            Stephen Glass
-            <Cat />
-          </h1>
-          <p class="subtitle">Welcome to my personal landing page</p>
-        </div>
+    <div class="mx-auto mt-10 max-w-xl rounded-2xl bg-white p-8 shadow-lg">
+      <header class="mb-8">
+        <span class="flex items-center">
+          <h1>Stephen Glass</h1>
+          <Cat />
+        </span>
+        <p class="mt-1 text-lg text-gray-500">Welcome to my personal landing page</p>
       </header>
-      <section class="cards">
+      <section class="flex flex-col gap-4">
         <Card
           href="https://github.com/stephenglass"
           icon={
@@ -31,7 +29,7 @@ export default function App() {
             </svg>
           }
           title="GitHub"
-          desc="View my projects and code."
+          desc="View my projects and open-source contributions."
         />
         <Card
           href="https://linkedin.com/in/stephenglass"
@@ -66,9 +64,9 @@ export default function App() {
               <path
                 d="M4 6l8 7 8-7"
                 stroke="#fff"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
               />
             </svg>
           }
