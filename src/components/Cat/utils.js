@@ -14,5 +14,5 @@ export function getAnimationByClickCount(count) {
     else if (count % 30 === 0) {
         return "animate-spin";
     }
-    return ""
+    return "animate-[wiggle_0.3s_ease-in-out]"
 }
