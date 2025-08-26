@@ -95,7 +95,7 @@ export default function App() {
           />
         </section>
       </main>
-      <footer class="mt-8 flex justify-center items-center text-gray-500 text-sm">
+      <footer class="my-8 flex justify-center items-center text-gray-500 text-sm">
         <a
           href="https://github.com/stephenglass/minimal-stephenglass"
           target="_blank"
