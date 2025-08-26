@@ -33,7 +33,7 @@ export default function Cat({ clicks = 0, onClicksChange }) {
     const emojiNode = document.createElement("span");
     render(
       <Emoji text={getEmojiByClickCount(clickCountRef.current)} />,
-      emojiNode
+      emojiNode,
     );
     const emojiElement = emojiNode.firstChild;
     if (!emojiElement) {
@@ -64,7 +64,7 @@ export default function Cat({ clicks = 0, onClicksChange }) {
     const svg = catSvgRef.current;
     if (svg) {
       const animationClassList = getAnimationByClickCount(
-        clickCountRef.current
+        clickCountRef.current,
       );
       if (animationClassList) {
         svg.classList.add(animationClassList);
