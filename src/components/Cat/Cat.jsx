@@ -1,25 +1,37 @@
+import { render } from "preact";
 import { useRef } from "preact/hooks";
+import Emoji from "./Emoji.jsx";
 import "./style.css";
 
 export default function Cat() {
-  const catRef = useRef(null);
+  const emojiContainerRef = useRef(null);
+
   const handleCatClick = () => {
-    const catContainer = catRef.current;
-    if (!catContainer) return;
-    const heart = document.createElement("span");
-    heart.setAttribute(
-      "class",
-      "absolute left-1/2 top-0 text-2xl opacity-0 pointer-events-none z-20 animate-[heart-pop_1.2s_cubic-bezier(0.4,0,0.2,1)]",
-    );
-    heart.textContent = "❤️";
-    catContainer.appendChild(heart);
+    const emojiContainer = emojiContainerRef.current;
+    if (!emojiContainer) {
+      return;
+    }
+
+    // Render emoji to a detached node
+    const emojiNode = document.createElement("span");
+    render(<Emoji text="❤️" />, emojiNode);
+    const emojiElement = emojiNode.firstChild;
+    if (!emojiElement) {
+      return;
+    }
+
+    emojiContainer.appendChild(emojiElement);
     setTimeout(() => {
-      heart.remove();
+      emojiElement.remove();
     }, 1200);
   };
 
   return (
-    <span ref={catRef} onClick={handleCatClick} class="relative ml-4 flex h-full items-end">
+    <span onClick={handleCatClick} class="relative ml-4 flex h-full items-end">
+      <div
+        ref={emojiContainerRef}
+        class="absolute left-0 top-0 w-full h-full pointer-events-none z-20"
+      />
       <svg
         width="40"
         height="40"
