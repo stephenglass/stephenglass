@@ -65,7 +65,7 @@ export default function App() {
           desc="Connect with me professionally."
         />
         <Card
-          href="mailto:stephen@example.com"
+          href="mailto:stephen@stephen.glass"
           icon={
             <svg
               width="32"
