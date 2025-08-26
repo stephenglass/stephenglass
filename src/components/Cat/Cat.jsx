@@ -5,22 +5,22 @@ import ChatBubble from "./ChatBubble.jsx";
 import { getAnimationByClickCount, getEmojiByClickCount } from "./utils.js";
 import "./style.css";
 
-export default function Cat({ onClick }) {
-  const clickCountRef = useRef(0);
+export default function Cat({ clicks = 0, onClicksChange }) {
+  const clickCountRef = useRef(clicks);
   const catSvgRef = useRef(null);
   const emojiContainerRef = useRef(null);
 
   const handleCatClick = () => {
-    // Trigger callback function
-    if (onClick) {
-      onClick();
+    clickCountRef.current += 1;
+    if (onClicksChange) {
+      onClicksChange(clickCountRef.current);
     }
 
-    clickCountRef.current += 1;
     const emojiContainer = emojiContainerRef.current;
     if (!emojiContainer) {
       return;
     }
+
     const emojiNode = document.createElement("span");
     render(
       <Emoji text={getEmojiByClickCount(clickCountRef.current)} />,
@@ -30,6 +30,7 @@ export default function Cat({ onClick }) {
     if (!emojiElement) {
       return;
     }
+
     emojiContainer.appendChild(emojiElement);
     setTimeout(() => {
       if (emojiContainer.contains(emojiElement)) {

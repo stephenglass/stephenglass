@@ -5,8 +5,8 @@ import { useState } from "preact/hooks";
 export default function App() {
   const [catClicks, setCatClicks] = useState(0);
 
-  const handleCatClick = () => {
-    setCatClicks((prev) => prev + 1);
+  const handleCatClicksChange = (count) => {
+    setCatClicks(count);
   };
 
   return (
@@ -14,7 +14,7 @@ export default function App() {
       <header class="mb-8 relative">
         <span class="flex items-center">
           <h1>Stephen Glass</h1>
-          <Cat onClick={handleCatClick} />
+          <Cat clicks={catClicks} onClicksChange={handleCatClicksChange} />
         </span>
         {catClicks > 0 && (
           <span class="absolute top-2 right-2 bg-gray-200 text-gray-600 rounded-full px-3 py-1 text-xs shadow-sm font-medium">
