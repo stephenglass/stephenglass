@@ -40,14 +40,12 @@ jobs:
         run: npm ci
 
       - name: Set base path
-        id: set-base
         run: |
-          if [[ -f CNAME ]]; then
+          if [[ "${{ vars.PAGES_CUSTOM_DOMAIN }}" == "true" ]]; then
             echo "BASE_PATH=/" >> $GITHUB_ENV
           else
             echo "BASE_PATH=/${GITHUB_REPOSITORY#*/}/" >> $GITHUB_ENV
           fi
-        shell: bash
 
       - name: Build site
         run: npm run build
