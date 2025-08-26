@@ -42,7 +42,7 @@ export default function App() {
               </svg>
             }
             title="GitHub"
-            desc="View my projects and open-source contributions."
+            desc="View my projects and open-source contributions"
           />
           <Card
             href="https://linkedin.com/in/stephenglass"
@@ -61,7 +61,7 @@ export default function App() {
               </svg>
             }
             title="LinkedIn"
-            desc="Connect with me professionally."
+            desc="Connect with me professionally"
           />
           <Card
             href="mailto:stephen@stephen.glass"
@@ -91,11 +91,11 @@ export default function App() {
               </svg>
             }
             title="Email"
-            desc="Send me an email."
+            desc="Send me an email at contact@stephen.glass"
           />
         </section>
       </main>
-      <footer class="mt-8 mb-4 flex justify-center items-center text-gray-500 text-sm">
+      <footer class="my-8 flex justify-center items-center text-gray-500 text-sm">
         <a
           href="https://github.com/stephenglass/stephenglass"
           target="_blank"
