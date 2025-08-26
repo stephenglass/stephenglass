@@ -97,7 +97,7 @@ export default function App() {
       </main>
       <footer class="mt-8 mb-4 flex justify-center items-center text-gray-500 text-sm">
         <a
-          href="https://github.com/stephenglass/minimal-stephenglass"
+          href="https://github.com/stephenglass/stephenglass"
           target="_blank"
           rel="noopener noreferrer"
           class="flex items-center gap-2 hover:text-black"
