@@ -2,14 +2,16 @@ import { render } from "preact";
 import { useRef } from "preact/hooks";
 import Emoji from "./Emoji.jsx";
 import ChatBubble from "./ChatBubble.jsx";
-import { getEmojiByClickCount } from "./utils.js";
+import { getAnimationByClickCount, getEmojiByClickCount } from "./utils.js";
 import "./style.css";
 
 export default function Cat() {
   const clickCountRef = useRef(0);
+  const catSvgRef = useRef(null);
   const emojiContainerRef = useRef(null);
 
   const handleCatClick = () => {
+    // Increment counter
     clickCountRef.current += 1;
     const emojiContainer = emojiContainerRef.current;
     if (!emojiContainer) {
@@ -43,6 +45,20 @@ export default function Cat() {
         }
       }, 1500);
     }
+
+    // Animations
+    const svg = catSvgRef.current;
+    if (svg) {
+      const animationClassList = getAnimationByClickCount(
+        clickCountRef.current
+      );
+      if (animationClassList) {
+        svg.classList.add(animationClassList);
+        setTimeout(() => {
+          svg.classList.remove(animationClassList);
+        }, 800);
+      }
+    }
   };
 
   return (
@@ -52,6 +68,7 @@ export default function Cat() {
         class="absolute left-0 top-0 w-full h-full pointer-events-none z-20"
       />
       <svg
+        ref={catSvgRef}
         width="40"
         height="40"
         viewBox="0 0 64 64"
