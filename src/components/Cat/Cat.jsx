@@ -1,25 +1,28 @@
 import { render } from "preact";
 import { useRef } from "preact/hooks";
 import Emoji from "./Emoji.jsx";
+import { getEmojiByClickCount } from "./utils.js";
 import "./style.css";
 
 export default function Cat() {
+  const clickCountRef = useRef(0);
   const emojiContainerRef = useRef(null);
 
   const handleCatClick = () => {
+    clickCountRef.current += 1;
     const emojiContainer = emojiContainerRef.current;
     if (!emojiContainer) {
       return;
     }
-
-    // Render emoji to a detached node
     const emojiNode = document.createElement("span");
-    render(<Emoji text="❤️" />, emojiNode);
+    render(
+      <Emoji text={getEmojiByClickCount(clickCountRef.current)} />,
+      emojiNode
+    );
     const emojiElement = emojiNode.firstChild;
     if (!emojiElement) {
       return;
     }
-
     emojiContainer.appendChild(emojiElement);
     setTimeout(() => {
       emojiElement.remove();
