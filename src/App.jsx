@@ -45,7 +45,7 @@ export default function App() {
             desc="View my projects and open-source contributions"
           />
           <Card
-            href="https://linkedin.com/in/stephenglass"
+            href="https://linkedin.com/in/stephen-glass"
             icon={
               <svg
                 width="32"
