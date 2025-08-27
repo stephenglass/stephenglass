@@ -16,7 +16,7 @@ export default function App() {
             <Cat clicks={catClicks} onClicksChange={handleCatClicksChange} />
           </div>
           {catClicks > 0 && (
-            <span class="absolute top-2 right-2 bg-gray-200 text-gray-600 rounded-full px-3 py-1 text-xs shadow-sm font-medium">
+            <span class="absolute top-2 right-2 bg-gray-200 text-gray-600 rounded-full px-3 py-1 text-xs shadow-sm font-medium select-none">
               {catClicks}
             </span>
           )}

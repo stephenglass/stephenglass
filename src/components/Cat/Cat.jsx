@@ -81,7 +81,10 @@ export default function Cat({ clicks = 0, onClicksChange }) {
   };
 
   return (
-    <span onClick={handleCatClick} class="relative ml-4 flex h-full items-end">
+    <span
+      onClick={handleCatClick}
+      class="relative ml-4 flex h-full items-end select-none touch-manipulation"
+    >
       <span id="rewardId" />
       <div
         ref={emojiContainerRef}
@@ -94,7 +97,7 @@ export default function Cat({ clicks = 0, onClicksChange }) {
         viewBox="0 0 64 64"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        class="mb-0 h-16 w-16 [image-rendering:pixelated]"
+        class="mb-0 h-16 w-16 [image-rendering:pixelated] scale-175 sm:scale-100"
       >
         <rect x="20" y="28" width="24" height="20" rx="6" fill="#222" />
         <rect x="24" y="16" width="16" height="16" rx="4" fill="#222" />
