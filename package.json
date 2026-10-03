@@ -17,7 +17,7 @@
     "prettier": "prettier --write .",
     "prettier:check": "prettier --check .",
     "prepare": "husky",
-    "test": "node --test src/scripts/game/*.test.ts"
+    "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",

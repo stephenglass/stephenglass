@@ -1,6 +1,6 @@
 ---
 import PixelSprite from "@/components/PixelSprite.astro";
-import { TONY_SLEEP, withOutline, ZZ } from "@/lib/sprites";
+import { TONY_SLEEP, ZZ } from "@/lib/sprites";
 import { withBase } from "@/lib/url";
 import Layout from "@/layouts/Layout.astro";
 ---
@@ -10,37 +10,25 @@ import Layout from "@/layouts/Layout.astro";
   description="This page doesn’t exist."
 >
   <section
-    class="bg-obsidian text-bone flex min-h-svh items-center pt-32 pb-20"
+    class="gutter flex min-h-svh flex-col justify-center py-16"
     aria-labelledby="not-found-title"
   >
-    <div class="wrap">
-      <div class="flex items-end gap-1" aria-hidden="true">
-        <PixelSprite
-          pixels={withOutline(TONY_SLEEP)}
-          class="tony h-auto w-24"
-        />
-        <PixelSprite pixels={ZZ} class="text-bone-dim mb-20 size-4" />
-      </div>
-      <h1
-        id="not-found-title"
-        class="mt-10 max-w-[12ch] text-[clamp(3rem,8vw,7rem)]"
-      >
-        This page wandered off.
-      </h1>
-      <p class="text-bone-dim mt-6">Tony is asleep on it.</p>
-      <a
-        href={withBase("/")}
-        class="text-ink hover:bg-bone bg-white ease-out-soft mt-10 inline-block rounded-full px-7 py-3.5 text-base font-semibold transition-colors duration-300"
-      >
-        Return home
-      </a>
+    <div class="flex items-end gap-1" aria-hidden="true">
+      <PixelSprite pixels={TONY_SLEEP} class="h-auto w-24" />
+      <PixelSprite pixels={ZZ} class="text-ink-dim mb-20 size-4" />
     </div>
+    <h1
+      id="not-found-title"
+      class="mt-10 max-w-[12ch] text-[clamp(3rem,9vw,8rem)] text-balance"
+    >
+      This page wandered off.
+    </h1>
+    <p class="text-ink-dim mt-6">Tony is asleep on it.</p>
+    <a
+      href={withBase("/")}
+      class="border-ink/10 decoration-ink/0 hover:decoration-ink ease-out-soft mt-12 max-w-md border-y py-4 text-[clamp(1.5rem,1.1rem+1.6vw,2.25rem)] font-semibold tracking-[-0.035em] underline decoration-2 underline-offset-[0.16em] transition-colors duration-300 focus-visible:decoration-ink"
+    >
+      Return home
+    </a>
   </section>
 </Layout>
-
-<style>
-  .tony {
-    --tony: #0b0a0d;
-    --tony-rim: rgb(246 236 221 / 0.45);
-  }
-</style>

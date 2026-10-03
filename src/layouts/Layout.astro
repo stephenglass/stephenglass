@@ -3,8 +3,6 @@ import "@/styles/global.css";
 
 import { Font } from "astro:assets";
 
-import SiteFooter from "@/components/SiteFooter.astro";
-import SiteHeader from "@/components/SiteHeader.astro";
 import { site } from "@/data/site";
 import { absoluteUrl, withBase } from "@/lib/url";
 
@@ -13,8 +11,7 @@ interface Props {
   description?: string;
 }
 
-const { title = `${site.name} - SWE`, description = site.description } =
-  Astro.props;
+const { title = site.name, description = site.description } = Astro.props;
 
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
 const socialImageUrl = absoluteUrl("og.png", Astro.site);
@@ -23,11 +20,10 @@ const personJsonLd = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "Person",
   name: site.name,
-  jobTitle: site.role,
   url: absoluteUrl("", Astro.site),
   email: `mailto:${site.email}`,
   image: socialImageUrl,
-  sameAs: [site.githubUrl, site.linkedinUrl, site.tonelabsUrl],
+  sameAs: [site.githubUrl, site.tonelabsUrl],
 });
 ---
 
@@ -64,12 +60,19 @@ const personJsonLd = JSON.stringify({
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="Stephen Glass, Software Engineer, beside Tony, a black pixel-art cat."
+      content="Stephen Glass, with Tony, a black pixel-art cat."
     />
     <meta name="twitter:card" content="summary_large_image" />
 
     <script type="application/ld+json" set:html={personJsonLd} />
     <Font cssVariable="--font-instrument-sans" preload />
+    <!-- Apply a remembered layout (LayoutSwitch) before first paint. -->
+    <script is:inline>
+      try {
+        if (localStorage.getItem("stephen.glass:layout") === "full")
+          document.documentElement.dataset.layout = "full";
+      } catch {}
+    </script>
   </head>
 
   <body>
@@ -80,13 +83,9 @@ const personJsonLd = JSON.stringify({
       Skip to content
     </a>
 
-    <SiteHeader />
-
     <main id="main">
       <slot />
     </main>
-
-    <SiteFooter />
 
     <script>
       import "@/scripts/console";

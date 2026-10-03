@@ -1,23 +1,18 @@
 @import "tailwindcss";
 
 /*
- * stephen.glass shares tonelabs' philosophy but not its look:
- * solid fields, no gradients, no shadows, no rounded corners; hairline
- * frames; Instrument Sans on one editorial scale; one accent, used only as
- * a whisper. Tonelabs is obsidian-first with amber. This site is
- * paper-first with aqua, and obsidian appears once, as Tony's stage.
+ * stephen.glass: one screen of paper and ink. The name is the design; the
+ * only other voice is the Tonelabs row, a small obsidian window with
+ * tonelabs' own dithered beams.
  */
 @theme {
   --color-paper: #f7f6f4;
   --color-ink: #16131a;
   --color-ink-dim: #5c5762;
+  /* The Tonelabs row only. */
   --color-obsidian: #131116;
   --color-bone: #f6ecdd;
   --color-bone-dim: #b8ad9f;
-  /* Aqua: decoration (underlines, dots, hearts). */
-  --color-aqua: #2fa3c4;
-  /* Aqua dark enough for text on paper (AA). */
-  --color-aqua-ink: #17708a;
 
   --font-body:
     var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
@@ -28,17 +23,9 @@
 @layer base {
   html {
     color-scheme: light;
-    scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
-    /* Tony's fill and rim for inline sprites (the rim is for dark fields). */
-    --tony: #16131a;
-    --tony-rim: transparent;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    html {
-      scroll-behavior: auto;
-    }
+    /* Tony's fill for inline sprites. */
+    --tony: var(--color-ink);
   }
 
   body {
@@ -49,44 +36,25 @@
     text-rendering: optimizeLegibility;
   }
 
-  h1,
-  h2 {
-    @apply text-balance;
+  h1 {
     font-weight: 650;
     letter-spacing: -0.04em;
     line-height: 0.98;
   }
 
-  p {
-    @apply text-pretty;
-  }
-
   ::selection {
-    @apply bg-aqua text-ink;
+    @apply bg-ink text-paper;
   }
 
   :focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 4px;
-    border-radius: 2px;
   }
 }
 
-@utility link-underline {
-  text-decoration-line: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.2em;
-
-  &:hover {
-    text-decoration-thickness: 3px;
-  }
-}
-
-@utility wrap {
-  margin-inline: auto;
-  width: 100%;
-  max-width: 75rem;
-  padding-inline: 1.25rem;
+/* The page's single gutter: 16px on phones, 40px from tablets up. */
+@utility gutter {
+  padding-inline: 1rem;
 
   @media (width >= 48rem) {
     padding-inline: 2.5rem;
@@ -97,18 +65,6 @@
 @utility pixelated {
   image-rendering: pixelated;
   shape-rendering: crispEdges;
-}
-
-/* The name sets itself: each letter rises out of a soft blur, once. */
-@keyframes blur-in {
-  from {
-    opacity: 0;
-    filter: blur(12px);
-    translate: 0 0.12em;
-  }
-  40% {
-    opacity: 0.6;
-  }
 }
 
 @keyframes emoji-pop {

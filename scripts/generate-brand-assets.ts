@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 import { chromium, type Page } from "@playwright/test";
 
 import { toSvg } from "../src/lib/pixels.ts";
-import { PALETTE, TONY_SIT } from "../src/lib/sprites.ts";
+import { PALETTE, TONY_LIT_SIT, TONY_SIT } from "../src/lib/sprites.ts";
 
 const root = (path: string): string =>
   fileURLToPath(new URL(`../${path}`, import.meta.url));
@@ -19,7 +19,10 @@ const root = (path: string): string =>
 const PAPER = "#F7F6F4";
 const INK = "#16131A";
 const INK_DIM = "#5C5762";
-const AQUA = "#2FA3C4";
+/** ink/10 on paper, as the page's hairlines. */
+const RULE = "#E0DEDD";
+/** "Stephen Glass" is 6.3em of ink: fill the 1040px between the margins. */
+const NAME_PX = 1040 / 6.3;
 
 interface Asset {
   path: string;
@@ -45,14 +48,14 @@ const assets: Asset[] = [
     path: "public/og.png",
     width: 1200,
     height: 630,
-    body: `<div class="fill" style="background:${PAPER};padding:0 96px;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <p style="color:${INK_DIM};font-size:26px;font-weight:600;display:flex;align-items:center;gap:14px">
-          <span style="width:12px;height:12px;border-radius:50%;background:${AQUA}"></span>stephen.glass</p>
-        <h1 style="color:${INK};font-size:124px;font-weight:600;font-stretch:85%;letter-spacing:-0.03em;line-height:0.92;margin-top:40px">stephen<br>glass</h1>
-        <p style="color:${INK};font-size:42px;font-weight:600;letter-spacing:-0.035em;margin-top:36px">software engineer.</p>
+    // The home page in brief: the name fitted to the width, then Tony on
+    // the links' top rule.
+    body: `<div class="fill" style="background:${PAPER};padding:0 80px;display:flex;flex-direction:column;justify-content:center">
+      <h1 style="color:${INK};font-size:${NAME_PX}px;font-weight:650;letter-spacing:-0.04em;line-height:0.86;margin-left:-0.027em">Stephen Glass</h1>
+      <div style="position:relative;margin-top:150px;border-top:1px solid ${RULE}">
+        <div style="position:absolute;right:16px;bottom:100%">${toSvg(TONY_LIT_SIT, PALETTE, 4)}</div>
+        <p style="color:${INK_DIM};font-size:28px;font-weight:450;padding-top:24px">stephen.glass</p>
       </div>
-      <div style="align-self:flex-end;margin-bottom:96px">${tony(14)}</div>
     </div>`,
   },
 ];
@@ -69,7 +72,6 @@ async function render(
     body { width: ${asset.width}px; height: ${asset.height}px; font-family: Instrument; }
     .fill { width: 100%; height: 100%; }
     .center { display: flex; align-items: center; justify-content: center; }
-    .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
     svg { display: block; }
   </style></head><body>${asset.body}</body></html>`);
   await page.evaluate(() => document.fonts.ready);

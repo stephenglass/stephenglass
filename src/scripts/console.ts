@@ -19,14 +19,13 @@ if (!window.__tonyWasHere) {
   window.__tonyWasHere = true;
   console.log(
     `%c${TONY}`,
-    "font-family: ui-monospace, monospace; line-height: 1.15; color: #ee8b2a;",
+    "font-family: ui-monospace, monospace; line-height: 1.15; color: #16131a;",
   );
   console.log(
     `%cHi, curious one. Tony approves of people who open DevTools.%c
 
-This site is open source: ${site.sourceUrl}
 Say hello: ${site.email}
-Psst: focus the game and press Space.`,
+Psst: Tony likes being petted. Try fifty.`,
     "font-weight: 600; font-size: 13px;",
     "font-size: 12px;",
   );

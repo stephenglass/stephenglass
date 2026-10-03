@@ -1,0 +1,76 @@
+---
+/**
+ * Compact / Full, top right. Sets `html[data-layout]` and remembers the
+ * choice for this visitor; `Layout.astro` applies it before first paint.
+ * JS-only, so it starts hidden.
+ */
+const OPTIONS = [
+  { value: "compact", label: "Compact" },
+  { value: "full", label: "Full" },
+];
+---
+
+<div
+  data-layout-switch
+  hidden
+  role="group"
+  aria-label="Layout"
+  class="absolute top-4 right-4 flex gap-4 text-sm font-semibold md:top-6 md:right-10"
+>
+  {OPTIONS.map((option) => (
+    <button
+      type="button"
+      data-layout-option={option.value}
+      aria-pressed="false"
+      class="layout-option text-ink-dim hover:text-ink ease-out-soft cursor-pointer underline decoration-transparent decoration-2 underline-offset-[0.3em] transition-colors duration-300"
+    >
+      {option.label}
+    </button>
+  ))}
+</div>
+
+<style>
+  .layout-option[aria-pressed="true"] {
+    color: var(--color-ink);
+    text-decoration-color: currentColor;
+  }
+</style>
+
+<script>
+  import { LAYOUT_KEY, type LayoutName } from "@/scripts/layout";
+
+  const root = document.querySelector<HTMLElement>("[data-layout-switch]");
+  const buttons = root?.querySelectorAll<HTMLButtonElement>(
+    "[data-layout-option]",
+  );
+
+  const current = (): LayoutName =>
+    document.documentElement.dataset.layout === "full" ? "full" : "compact";
+
+  const sync = (): void =>
+    buttons?.forEach((button) =>
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.layoutOption === current()),
+      ),
+    );
+
+  buttons?.forEach((button) =>
+    button.addEventListener("click", () => {
+      const layout: LayoutName =
+        button.dataset.layoutOption === "full" ? "full" : "compact";
+      document.documentElement.dataset.layout = layout;
+      try {
+        localStorage.setItem(LAYOUT_KEY, layout);
+      } catch {
+        // Storage can be blocked; the switch still works for this visit.
+      }
+      sync();
+    }),
+  );
+
+  if (root) {
+    sync();
+    root.hidden = false;
+  }
+</script>

@@ -2,43 +2,35 @@
 
 Personal landing page: a static Astro 7 site (Tailwind 4, TypeScript strict), deployed to GitHub Pages. See `USAGE.md` for commands.
 
-## Design: tonelabs' philosophy, its own identity
+## Design: "Monument"
 
-The sister site tonelabs.io (`~/Projects/tonelabs/apps/tonelabs`) sets the philosophy; this site must still look like itself.
+One screen of paper and ink. Simple and clean: the impression comes from type, scale and alignment, not effects.
 
-- **Shared:**
-  - Solid fields with no gradients, no shadows and no rounded corners. The 404's pill button is the only exception.
-  - Hairline frames (`ink/10`, `white/10`).
-  - Instrument Sans everywhere on tonelabs' scale: body 1.1875rem at weight 450; headings weight 650 at −0.04em, sized with `clamp()`. No monospace.
-  - Short declarative copy that ends with a period.
-  - 8×8 pixel glyphs, always beside a text label.
-  - Motion is limited to colour and underline transitions (300ms `ease-out-soft`).
-- **Ours:**
-  - Fields alternate like tonelabs: Hero (obsidian) → Fish Catch (paper) → Elsewhere (obsidian) → Contact + footer (paper). The Fish Catch tank has no frame; its edges soften slightly into the paper.
-  - The accent is aqua (`aqua` for decoration, `aqua-ink` for text), never amber.
-  - The hero name and subline are set lowercase via CSS (`stephen glass` / `software engineer.`), Instrument Sans semibold at about 85% width. The real text stays proper case for SEO and screen readers. The self-hosted variable font carries the `wdth` axis.
-  - **Hero background: "glass fins"** (`GlassFins.astro` + `src/scripts/hero/glass-fins.ts`). Tonelabs' beams rebuilt in glass: 5 wide fins with gaps, crisp edges plus an inner line, faint frost, refraction, and a thin muted sea-glass fringe. Very slow motion. 1-bit Bayer, bone on obsidian. Keep it quiet: low brightness, low motion.
-  - Rejected hero ideas (don't retry them): smooth Beams, a glass slab or prism over beams, Liquid Glass panes or cubes over beams, Paper Shaders presets, caustics, Atkinson ripples, Moonglow, contour lines, cursor dot fields. Also rejected: a hero-echo "sliver" in Fish Catch.
-  - Tony, a plain black pixel cat with light eyes, is the motif. Keep him neutral, not cutesy.
+- **The name** (`Stephen Glass`, no title or role) is set on one line and fills a 56rem measure (or the screen, if narrower), ink edge to ink edge. It is Instrument Sans at weight 650, tracking −0.04em, line-height 0.86. It is fitted in pure CSS: `font-size: min(100cqw, 56rem) / --k`, where `--k` = 6.3 is the measured ink width in em. If the font, weight or tracking changes, re-measure `--k` and the `-0.027em` bearing.
+- **Two layouts, switchable top right** ("Compact · Full", `LayoutSwitch.astro`). Compact (the default) groups the name and links in a centred column; full puts the name at the top and the links at the bottom of the screen. The choice goes in `html[data-layout]`, is remembered in localStorage, and is applied before paint by an inline script in `Layout.astro`. Stephen likes both, so keep both until he decides.
+- **Tony** (a black 28×28 pixel cat with light eyes, softly rounded ears and head) sits on the links' top rule at the right, out of the way. He is lit from the top right in ordered-dither grey (`withLight` → `TONY_LIT_*` in `src/lib/sprites.ts`), matching the Tonelabs row. He scales by whole pixels. Clicking him pets him (`src/scripts/pet.ts`: hearts, counter, milestones, a "meow." every 15th pet, a burst every 50th). The 16×15 classic Tony remains for the favicon and the 404. He stays neutral, not cutesy. He means a lot to Stephen, so keep him.
+- **Three link rows:** GitHub, Email, Tonelabs. They are separated by hairlines (`ink/10`), with a large label on the left and the destination plus ↗ on the right (just ↗ on phones). Hover shows only an underline and colour change, 300ms `ease-out-soft`.
+- **Tonelabs is the one dark row:** obsidian, with tonelabs' 1-bit Bayer beams in bone drifting very slowly behind it (`TonelabsDither.astro` + `src/lib/dither.ts`, ported from `~/Projects/tonelabs/apps/tonelabs`). It is masked away from the label and address. It is the only decoration on the page.
+- **Colours:** paper `#f7f6f4`, ink `#16131a`, ink-dim. Obsidian and bone appear only in the Tonelabs row. There is no accent colour and no theme toggle (light only); the layout switch is the only page control.
 - **Never:**
-  - Cursor-chasing effects: things that follow or react to the pointer across the page, or eyes that track it.
-  - Cards with radii or lifts.
-  - A theme toggle. The fields are fixed.
+  - fancy effects or animation beyond the Tonelabs drift and Tony's petting;
+  - cursor-chasing effects (things that follow or react to the pointer, eyes that track it);
+  - gradients, shadows, rounded cards;
+  - monospace;
+  - a header or footer.
 - **Tonelabs:** show it by name only. Never say "founder", "studio" or games; e2e guards this.
 
 ## Layout
 
 ```
 src/
-├── pages/            index (Hero, FishCatch, Elsewhere, Contact), 404, favicon.svg + robots.txt endpoints
-├── layouts/          Layout.astro: head/SEO, skip link, SiteHeader, <main>, SiteFooter, console egg
-├── components/       SiteHeader, SiteFooter, GlassFins, PetTony, PixelGlyph, PixelSprite
-│   └── sections/     Hero, FishCatch, Elsewhere, Contact
+├── pages/            index (renders Home), 404, favicon.svg + robots.txt endpoints
+├── layouts/          Layout.astro: head/SEO, skip link, <main>, console egg
+├── components/       Home (the page body), LayoutSwitch, PetTony, PixelSprite, TonelabsDither
 ├── assets/           Instrument Sans (OFL)
-├── lib/              pure data/helpers: pixels, sprites (Tony), glyphs (8×8), bayer, url
-├── scripts/          client scripts: hero/ (glass-fins WebGL2, ambient loop), pet, burst, console
-│   └── game/         Fish Catch: engine.ts (pure, unit-tested), render, index (DOM/input), storage
-├── data/site.ts      name, role, links, theme colour (single source)
+├── lib/              pure data/helpers: pixels, sprites (Tony), bayer, dither, url
+├── scripts/          client scripts: pet, burst, console, layout (switch key)
+├── data/site.ts      name, links, theme colour (single source)
 └── styles/global.css the only CSS entry: tokens and utilities
 scripts/generate-brand-assets.ts   favicon PNG, touch icon, og.png (commit outputs in public/)
 e2e/                  Playwright + axe
@@ -47,10 +39,10 @@ e2e/                  Playwright + axe
 ## Rules
 
 - **Base path.** The site may be served under `/<repo>/`. Never hard-code root-relative URLs; use `withBase()` / `absoluteUrl()` from `src/lib/url.ts`.
-- **Ambient motion.** Decorative motion (glass fins, aquarium scenery) is paused offscreen or when the tab is hidden, and shows a still frame under `prefers-reduced-motion`.
-- **Pixel art** lives in `src/lib/sprites.ts` / `glyphs.ts` as character rows. Keep those files DOM-free with erasable TS, because the brand-asset script and `node --test` import them directly.
+- **Ambient motion.** The Tonelabs dither pauses offscreen or in a hidden tab, shows a still frame under `prefers-reduced-motion`, and never reacts to the pointer.
+- **Pure lib.** Keep `src/lib/*` DOM-free with erasable TS, because the brand-asset script and `node --test` import it directly.
 - **No JS** must still show every link. JS-only controls start `hidden`.
-- **Astro and agents.** `astro dev`/`preview` background themselves when run by an agent. Pass `--ignore-lock` to keep them in the foreground; Playwright's web server does this.
+- **Astro and agents.** `astro dev`/`preview` background themselves when run by an agent. Pass `--ignore-lock` to keep them in the foreground; Playwright's web server does this (port 4322).
 
 ## Checks
 

@@ -1,10 +1,11 @@
 ---
 /**
  * Tony, sitting. Click to pet him (see src/scripts/pet.ts). Without JS he is
- * a still picture inside a button that does nothing, which is harmless.
+ * a still picture inside a button that does nothing, which is harmless. He
+ * fills the width the caller gives him.
  */
 import PixelSprite from "@/components/PixelSprite.astro";
-import { TONY_BLINK, TONY_HAPPY, TONY_SIT, withOutline } from "@/lib/sprites";
+import { TONY_LIT_BLINK, TONY_LIT_SIT } from "@/lib/sprites";
 
 interface Props {
   class?: string;
@@ -13,9 +14,9 @@ interface Props {
 const { class: className } = Astro.props;
 
 const frames = [
-  { name: "sit", pixels: withOutline(TONY_SIT) },
-  { name: "blink", pixels: withOutline(TONY_BLINK) },
-  { name: "happy", pixels: withOutline(TONY_HAPPY) },
+  { name: "sit", pixels: TONY_LIT_SIT },
+  { name: "blink", pixels: TONY_LIT_BLINK },
+  { name: "happy", pixels: TONY_LIT_BLINK },
 ];
 ---
 
@@ -24,7 +25,7 @@ const frames = [
     data-pet-bubble
     hidden
     aria-hidden="true"
-    class="bg-ink text-paper after:border-t-ink absolute -top-10 right-[calc(100%-2rem)] z-10 px-3 py-1.5 text-sm font-semibold whitespace-nowrap select-none after:absolute after:top-full after:right-4 after:border-x-[5px] after:border-t-[6px] after:border-x-transparent"
+    class="bg-ink text-paper after:border-t-ink absolute right-1/2 bottom-full z-10 mb-3 px-3 py-1.5 text-sm font-semibold whitespace-nowrap select-none after:absolute after:top-full after:right-2 after:border-x-[5px] after:border-t-[6px] after:border-x-transparent"
   >
     meow.
   </span>
@@ -33,7 +34,7 @@ const frames = [
     type="button"
     data-pet
     aria-label="Pet Tony"
-    class="pet__button relative block touch-manipulation select-none"
+    class="pet__button relative block w-full touch-manipulation select-none"
   >
     <span data-pet-sprite class="pet__sprite block origin-bottom">
       {frames.map((frame) => (
@@ -41,7 +42,7 @@ const frames = [
           pixels={frame.pixels}
           data-frame={frame.name}
           data-active={frame.name === "sit" ? "" : undefined}
-          class="h-auto w-[4.5rem] sm:w-[6.75rem]"
+          class="block h-auto w-full"
         />
       ))}
     </span>
@@ -54,7 +55,7 @@ const frames = [
 
   <span
     aria-hidden="true"
-    class="pet__purr text-ink-dim absolute top-1/2 right-full mr-3 text-sm font-semibold select-none"
+    class="pet__purr text-ink-dim absolute bottom-full left-[34%] mb-2 -translate-x-1/2 text-sm font-semibold select-none"
   >
     prrr
   </span>
@@ -62,7 +63,7 @@ const frames = [
     data-pet-count
     hidden
     aria-hidden="true"
-    class="border-ink/10 bg-paper text-ink-dim absolute -top-2 -right-2 border px-1.5 py-1 text-xs leading-none font-semibold tabular-nums select-none"
+    class="border-ink/10 bg-paper text-ink-dim absolute right-full bottom-0 mr-2 border px-1.5 py-1 text-xs leading-none font-semibold tabular-nums select-none"
   ></span>
 </div>
 
@@ -71,6 +72,13 @@ const frames = [
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     cursor: pointer;
+  }
+
+  /* A comfortable tap target, even when he is small. */
+  .pet__button::before {
+    content: "";
+    position: absolute;
+    inset: -0.75rem;
   }
 
   .pet__sprite :global([data-frame]:not([data-active])) {

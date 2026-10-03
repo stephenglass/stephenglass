@@ -1,7 +1,7 @@
 ---
 /**
- * A multi-colour sprite from src/lib/sprites.ts as inline SVG. Tony's body
- * and rim read the `--tony` and `--tony-rim` theme variables.
+ * A sprite from src/lib/sprites.ts as inline SVG. Tony's body reads
+ * `--tony`; the sleep mark follows the text colour.
  */
 import { sizeOf, toRuns, type Pixels } from "@/lib/pixels";
 import { PALETTE } from "@/lib/sprites";
@@ -18,7 +18,6 @@ const { width, height } = sizeOf(pixels);
 const FILLS: Readonly<Record<string, string>> = {
   ...PALETTE,
   k: "var(--tony)",
-  o: "var(--tony-rim)",
   z: "currentColor",
 };
 ---
