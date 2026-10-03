@@ -10,7 +10,9 @@ This repository is the source for my [personal landing page](https://stephen.gla
 - `npm run e2e` - Playwright end-to-end and accessibility tests (first run: `npx playwright install chromium`)
 - `npm run brand:assets` - Regenerates the favicon PNG, touch icon and `og.png` in `public/`
 
-## Deploying
+## CI and deploying
+
+Pull requests run formatting, type checks, unit tests, the build and the e2e suite with `.github/workflows/ci.yml`.
 
 Pushing to `main` builds and deploys with `.github/workflows/deploy.yml`. Set the repository variable `PAGES_CUSTOM_DOMAIN=true` when the site is served from the custom domain; otherwise it builds for `https://<owner>.github.io/<repo>/`.
 

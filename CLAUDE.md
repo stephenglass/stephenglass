@@ -52,4 +52,4 @@ e2e/             Playwright + axe
 
 ## Checks
 
-`npm run check && npm test && npm run build && npm run e2e` (pre-commit runs `prettier:check` and `check`).
+`npm run check && npm test && npm run build && npm run e2e` (pre-commit runs `prettier:check` and `check`; CI runs all of them on pull requests).
