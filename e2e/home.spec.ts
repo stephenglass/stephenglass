@@ -4,6 +4,19 @@ import { expect, test, type Page } from "@playwright/test";
 const links = (page: Page) =>
   page.getByRole("navigation", { name: "Links" }).getByRole("link");
 
+/**
+ * Run the fake clock until the laser's first visit begins. Its timer is set
+ * only once an IntersectionObserver (real time) sees the line, so keep
+ * ticking rather than jumping once.
+ */
+const untilLaserVisits = (page: Page) =>
+  expect
+    .poll(async () => {
+      await page.clock.runFor(1000);
+      return page.locator("[data-laser]").getAttribute("data-animating");
+    })
+    .toBe("true");
+
 test.describe("Home page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
@@ -107,8 +120,7 @@ test.describe("Home page", () => {
     await expect(dot).toHaveAttribute("aria-hidden", "true");
     await expect(dot).toHaveAttribute("data-animating", "false");
 
-    await page.clock.runFor(4000);
-    await expect(dot).toHaveAttribute("data-animating", "true");
+    await untilLaserVisits(page);
     await expect
       .poll(async () => {
         await page.clock.runFor(500);
@@ -129,7 +141,8 @@ test.describe("Home page", () => {
     await page.addInitScript(() => (Math.random = () => 0.999));
     await page.clock.install();
     await page.goto("/");
-    await page.clock.runFor(6000);
+    await untilLaserVisits(page);
+    await page.clock.runFor(1000);
     const dot = await page.locator("[data-laser]").boundingBox();
     const tony = await page
       .getByRole("button", { name: "Pet Tony" })

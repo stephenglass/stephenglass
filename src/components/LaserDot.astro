@@ -37,8 +37,9 @@ const { class: className } = Astro.props;
     transition: opacity 300ms var(--ease-out-soft);
   }
 
+  /* Partly see-through, so the red sits quietly on the paper. */
   .laser[data-on] {
-    opacity: 1;
+    opacity: 0.55;
   }
 </style>
 
