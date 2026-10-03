@@ -2,8 +2,8 @@
  * Pet Tony. Everything he does stays on his pixel grid: each pet he shuts
  * his eyes in a ^ and hops a cell, and a pixel heart rises a cell at a time
  * and dissolves in Bayer order. Milestones carry over from the original
- * site: a mouse every 10th pet, a fish and a higher hop every 20th, an ear
- * flick every 30th, a "meow." every 15th and a flight of hearts every 50th.
+ * site: a fish and a higher hop every 20th pet, an ear flick every 30th, a
+ * "meow." every 15th and a flight of hearts every 50th.
  * Hovering or focusing a while makes him purr: "prrr" and slow blinks. At
  * rest he looks whichever way the laser dot tells him (a `tony:gaze` event).
  *
@@ -17,7 +17,7 @@ const reducedMotion = window.matchMedia(
 const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
 
 type Frame = "sit" | "look-left" | "blink" | "happy" | "ear-flick";
-type Particle = "heart" | "mouse" | "fish";
+type Particle = "heart" | "fish";
 
 /** Ms per cell of a hop, and of a particle's rise. */
 const HOP_STEP = 60;
@@ -29,8 +29,7 @@ const STILL_MS = 600;
 /** Particles rise from above the middle of his head (cell column). */
 const HEAD_COL = 8;
 
-const particleFor = (n: number): Particle =>
-  n % 20 === 0 ? "fish" : n % 10 === 0 ? "mouse" : "heart";
+const particleFor = (n: number): Particle => (n % 20 === 0 ? "fish" : "heart");
 
 const randomInt = (low: number, high: number): number =>
   low + Math.floor(Math.random() * (high - low + 1));

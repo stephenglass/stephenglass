@@ -8,7 +8,6 @@ import {
   FISH,
   HEART,
   LASER,
-  MOUSE,
   PALETTE,
   TONY_BLINK,
   TONY_HI_BLINK,
@@ -71,7 +70,7 @@ test("happy Tony only changes his eyes; the ear flick only his ears", () => {
 });
 
 test("particles dissolve in Bayer order, a little more at each stage", () => {
-  for (const pixels of [HEART, MOUSE, FISH]) {
+  for (const pixels of [HEART, FISH]) {
     assert.deepEqual(dissolve(pixels, 0), pixels);
     assert.match(dissolve(pixels, 1).join(""), /^\.+$/);
     let before = pixels.join("\n");
@@ -94,7 +93,6 @@ test("rows are all the same width", () => {
     TONY_HI_EAR_FLICK,
     LASER,
     HEART,
-    MOUSE,
     FISH,
   ]) {
     const { width } = sizeOf(pixels);
@@ -121,7 +119,6 @@ test("every sprite key has a fill", () => {
     LASER,
     ZZ,
     HEART,
-    MOUSE,
     FISH,
   ]) {
     for (const cell of pixels.join("").replaceAll(".", "")) {

@@ -1,7 +1,8 @@
 /**
  * Tony, drawn as pixel rows (see src/lib/pixels.ts). Keys: k body, w eye,
  * d dithered light (added by `withLight`), s seam, z sleep mark; r and q
- * are the laser dot's core and halo.
+ * are the laser dot's core and halo. The particles use h and j (rose
+ * pink), b (slate blue) and c (pale blue).
  *
  * Pure data: shared by build-time SVGs, the favicon and the brand-asset script.
  */
@@ -16,6 +17,10 @@ export const PALETTE: Readonly<Record<string, string>> = {
   z: "#16131a",
   r: "#e5281e",
   q: "#f29a92",
+  h: "#e0577a",
+  j: "#f4b3c2",
+  b: "#4f6d8f",
+  c: "#a8bdd4",
 };
 
 /*
@@ -173,34 +178,35 @@ export const LASER: Pixels = [".q.q.", "qrrrq", ".rrr.", "qrrrq", ".q.q."];
 
 export const ZZ: Pixels = ["zzzz", "..z.", ".z..", "zzzz"];
 
+/** The pixels with some keys swapped for others. */
+const recolor = (
+  pixels: Pixels,
+  keys: Readonly<Record<string, string>>,
+): Pixels =>
+  pixels.map((row) => [...row].map((cell) => keys[cell] ?? cell).join(""));
+
 /*
- * What rises from Tony when he is petted, drawn on his grid: a heart, a
- * mouse every 10th pet, a fish every 20th.
+ * What rises from Tony when he is petted, drawn on his grid and lit like him
+ * from the top right: a rose-pink heart, and a slate-blue fish every 20th
+ * pet.
  */
-export const HEART: Pixels = [
-  ".kk.kk.",
-  "kkkkkkk",
-  "kkkkkkk",
-  ".kkkkk.",
-  "..kkk..",
-  "...k...",
-];
+export const HEART: Pixels = recolor(
+  withLight(
+    [".kk.kk.", "kkkkkkk", "kkkkkkk", ".kkkkk.", "..kkk..", "...k..."],
+    2,
+    0.8,
+  ),
+  { k: "h", d: "j" },
+);
 
-export const MOUSE: Pixels = [
-  "..kk......",
-  ".kkkkk....",
-  "kwkkkkk..k",
-  "kkkkkkkkk.",
-  ".k...k....",
-];
-
-export const FISH: Pixels = [
-  "..kkk...k",
-  ".kkkkk.kk",
-  "kwkkkkkkk",
-  ".kkkkk.kk",
-  "..kkk...k",
-];
+export const FISH: Pixels = recolor(
+  withLight(
+    ["..kkk...k", ".kkkkk.kk", "kwkkkkkkk", ".kkkkk.kk", "..kkk...k"],
+    2,
+    0.7,
+  ),
+  { k: "b", d: "c", w: "k" },
+);
 
 /**
  * The pixels with a share `amount` (0–1) of their cells taken away in
