@@ -1,2 +1,4 @@
-node_modules
-dist
+# Also skips everything in .gitignore.
+package-lock.json
+public
+src/assets/fonts

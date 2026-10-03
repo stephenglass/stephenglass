@@ -1,0 +1,196 @@
+---
+/**
+ * The home page: the name, fitted to its measure, and three links with Tony
+ * perched on their top rule, where a laser dot now and then visits. Tonelabs
+ * is the one dark row.
+ *
+ * Two layouts, switched by `LayoutSwitch` through `html[data-layout]`:
+ * compact (the default) sets everything together in a centred column; full
+ * spreads the name and links across the screen, top and bottom.
+ */
+import LaserDot from "@/components/LaserDot.astro";
+import LayoutSwitch from "@/components/LayoutSwitch.astro";
+import PetTony from "@/components/PetTony.astro";
+import TonelabsDither from "@/components/TonelabsDither.astro";
+import { site } from "@/data/site";
+import { NAME_TYPE } from "@/lib/name";
+
+const links = [
+  {
+    label: "GitHub",
+    href: site.githubUrl,
+    detail: `@${new URL(site.githubUrl).pathname.slice(1)}`,
+  },
+  { label: "Email", href: `mailto:${site.email}`, detail: site.email },
+  {
+    label: "Tonelabs",
+    href: site.tonelabsUrl,
+    detail: new URL(site.tonelabsUrl).host,
+    dark: true,
+  },
+];
+
+const nameStyle = [
+  `--ink-em: ${NAME_TYPE.inkEm}`,
+  `margin-left: ${NAME_TYPE.bearingEm}em`,
+  `font-weight: ${NAME_TYPE.weight}`,
+  `letter-spacing: ${NAME_TYPE.trackingEm}em`,
+  `line-height: ${NAME_TYPE.lineHeight}`,
+].join("; ");
+---
+
+<div class="page gutter min-h-svh">
+  <div class="column">
+    <h1 class="name" style={nameStyle}>
+      {site.name}
+    </h1>
+
+    <nav aria-label="Links" class="links relative">
+      <LaserDot />
+      <PetTony class="links__tony" />
+      <ul>
+        {links.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              class:list={[
+                "row",
+                link.dark
+                  ? "row--dark bg-obsidian text-bone relative isolate overflow-hidden"
+                  : "border-ink/10 border-t",
+              ]}
+            >
+              {link.dark && <TonelabsDither class="absolute inset-0 -z-10" />}
+              <span class="row__label underline-soft">{link.label}</span>
+              <span
+                class:list={[
+                  "row__detail",
+                  link.dark ? "text-bone-dim" : "text-ink-dim",
+                ]}
+              >
+                <span class="max-sm:sr-only">{link.detail}</span>
+                <svg class="row__arrow" viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M4.5 11.5l7-7M5.5 4.5h6v6" />
+                </svg>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+  <LayoutSwitch />
+</div>
+
+<style>
+  /* Compact (default): name and links together, centred on the screen. */
+  .page {
+    --measure: 56rem;
+    --tony-cell: 2px;
+    display: grid;
+    place-items: center;
+  }
+
+  @media (width >= 48rem) {
+    .page {
+      --tony-cell: 3px;
+    }
+  }
+
+  .column {
+    container-type: inline-size;
+    width: 100%;
+    max-width: var(--measure);
+    padding-block: 4rem;
+  }
+
+  /* The name fills its measure on one line (see src/lib/name.ts). */
+  .name {
+    font-size: calc(min(100cqw, var(--measure)) / var(--ink-em));
+  }
+
+  .links {
+    margin-top: clamp(6rem, 13svh, 8.5rem);
+  }
+
+  /* Full: the name at the top, the links at the bottom of the screen. */
+  :global(html[data-layout="full"]) .page {
+    display: block;
+  }
+
+  :global(html[data-layout="full"]) .column {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    grid-template-columns: minmax(0, 1fr);
+    max-width: none;
+    min-height: 100svh;
+    padding-top: clamp(4.5rem, 14svh, 8rem);
+    padding-bottom: clamp(1rem, 4svh, 2.5rem);
+  }
+
+  :global(html[data-layout="full"]) .links {
+    margin-top: 8rem;
+  }
+
+  /* Tony sits on the links' top rule, at the right, out of the way. */
+  .links :global(.links__tony) {
+    position: absolute;
+    right: 0.75rem;
+    bottom: 100%;
+  }
+
+  .row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-block: clamp(0.85rem, 2.2svh, 1.35rem);
+  }
+
+  .row__label {
+    font-size: clamp(1.625rem, 1.1rem + 1.8vw, 2.5rem);
+    font-weight: 650;
+    letter-spacing: -0.035em;
+    line-height: 1.1;
+  }
+
+  .row:hover .row__label,
+  .row:focus-visible .row__label {
+    text-decoration-color: currentColor;
+  }
+
+  .row__detail {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1rem;
+    transition: color 300ms var(--ease-out-soft);
+  }
+
+  .row:hover .row__detail,
+  .row:focus-visible .row__detail {
+    color: inherit;
+  }
+
+  .row__arrow {
+    width: 1.125rem;
+    height: 1.125rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: square;
+  }
+
+  /* The dark window bleeds past the column so its label still lines up. */
+  .row--dark {
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+  }
+
+  @media (width >= 48rem) {
+    .row--dark {
+      margin-inline: -1.25rem;
+      padding-inline: 1.25rem;
+    }
+  }
+</style>

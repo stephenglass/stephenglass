@@ -1,32 +1,38 @@
 {
   "name": "stephenglass",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "astro": "astro",
+    "e2e": "playwright test",
+    "brand:assets": "node scripts/generate-brand-assets.ts",
     "prettier": "prettier --write .",
     "prettier:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
-    "preact": "^10.26.9",
-    "react-rewards": "^2.1.0"
+    "@astrojs/sitemap": "^3.7.4",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.3.5",
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
-    "@preact/preset-vite": "^2.10.2",
-    "@tailwindcss/vite": "^4.1.12",
-    "eslint": "^9.34.0",
-    "eslint-config-preact": "^2.0.0",
+    "@astrojs/check": "^0.9.10",
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.63.0",
     "husky": "^9.1.7",
-    "prettier": "^3.6.2",
-    "prettier-plugin-tailwindcss": "^0.6.14",
-    "tailwindcss": "^4.1.12",
-    "vite": "^7.1.2"
-  },
-  "eslintConfig": {
-    "extends": "preact"
+    "prettier": "^3.9.9",
+    "prettier-plugin-astro": "^1.1.0",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "typescript": "^6.0.3"
   }
 }

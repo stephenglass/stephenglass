@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@theme {
+  /* Keep in step with src/lib/palette.ts (a test checks). */
+  --color-paper: #f7f6f4;
+  --color-ink: #16131a;
+  --color-ink-dim: #5c5762;
+  /* The Tonelabs row only. */
+  --color-obsidian: #131116;
+  --color-bone: #f6ecdd;
+  --color-bone-dim: #b8ad9f;
+
+  --font-body:
+    var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-paper font-body text-ink antialiased;
+    font-size: 1.1875rem;
+    font-weight: 450;
+    line-height: 1.55;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1 {
+    font-weight: 650;
+    letter-spacing: -0.04em;
+    line-height: 0.98;
+  }
+
+  ::selection {
+    @apply bg-ink text-paper;
+  }
+
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+  }
+}
+
+/* The page's single gutter: 16px on phones, 40px from tablets up. */
+@utility gutter {
+  padding-inline: 1rem;
+
+  @media (width >= 48rem) {
+    padding-inline: 2.5rem;
+  }
+}
+
+/*
+ * Links answer hover and focus with an underline only: set the colour with
+ * `decoration-current` (or a parent's state) to show it.
+ */
+@utility underline-soft {
+  text-decoration-line: underline;
+  text-decoration-thickness: 2px;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.16em;
+  transition-property: color, text-decoration-color;
+  transition-duration: 300ms;
+  transition-timing-function: var(--ease-out-soft);
+}

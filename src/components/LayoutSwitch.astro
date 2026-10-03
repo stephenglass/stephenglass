@@ -1,0 +1,73 @@
+---
+/**
+ * Compact · Full, top right. Sets `html[data-layout]` and remembers the
+ * choice for this visitor; `Layout.astro` applies it before first paint.
+ * JS-only, so it starts hidden.
+ */
+import { LAYOUTS } from "@/lib/layout";
+
+const label = (layout: string): string =>
+  layout[0]?.toUpperCase() + layout.slice(1);
+---
+
+<div
+  data-layout-switch
+  hidden
+  role="group"
+  aria-label="Layout"
+  class="absolute top-4 right-4 flex gap-4 text-sm font-semibold md:top-6 md:right-10"
+>
+  {LAYOUTS.map((layout) => (
+    <button
+      type="button"
+      data-layout-option={layout}
+      aria-pressed="false"
+      class="layout-option underline-soft text-ink-dim hover:text-ink cursor-pointer underline-offset-[0.3em]"
+    >
+      {label(layout)}
+    </button>
+  ))}
+</div>
+
+<style>
+  .layout-option[aria-pressed="true"] {
+    color: var(--color-ink);
+    text-decoration-color: currentColor;
+  }
+</style>
+
+<script>
+  import { LAYOUT_KEY, LAYOUTS } from "@/lib/layout";
+
+  const root = document.querySelector<HTMLElement>("[data-layout-switch]");
+  const buttons = [
+    ...(root?.querySelectorAll<HTMLButtonElement>("[data-layout-option]") ??
+      []),
+  ];
+
+  const sync = (): void => {
+    const current = document.documentElement.dataset.layout ?? LAYOUTS[0];
+    for (const button of buttons)
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.layoutOption === current),
+      );
+  };
+
+  for (const button of buttons)
+    button.addEventListener("click", () => {
+      const layout = button.dataset.layoutOption ?? LAYOUTS[0];
+      document.documentElement.dataset.layout = layout;
+      try {
+        localStorage.setItem(LAYOUT_KEY, layout);
+      } catch {
+        // Storage can be blocked; the switch still works for this visit.
+      }
+      sync();
+    });
+
+  if (root) {
+    sync();
+    root.hidden = false;
+  }
+</script>

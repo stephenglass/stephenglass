@@ -1,0 +1,40 @@
+---
+/**
+ * A sprite from src/lib/sprites.ts as inline SVG. The sleep mark (`z`)
+ * follows the text colour.
+ */
+import { sizeOf, toRuns, type Pixels } from "@/lib/pixels";
+import { PALETTE } from "@/lib/sprites";
+
+interface Props {
+  pixels: Pixels;
+  class?: string;
+  [attribute: `data-${string}`]: string | number | boolean | undefined;
+}
+
+const { pixels, class: className, ...rest } = Astro.props;
+const { width, height } = sizeOf(pixels);
+
+const FILLS: Readonly<Record<string, string>> = {
+  ...PALETTE,
+  z: "currentColor",
+};
+---
+
+<svg
+  class={className}
+  viewBox={`0 0 ${width} ${height}`}
+  shape-rendering="crispEdges"
+  aria-hidden="true"
+  {...rest}
+>
+  {toRuns(pixels).map((run) => (
+    <rect
+      x={run.x}
+      y={run.y}
+      width={run.width}
+      height="1"
+      fill={FILLS[run.key]}
+    />
+  ))}
+</svg>

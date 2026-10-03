@@ -1,0 +1,35 @@
+---
+import PixelSprite from "@/components/PixelSprite.astro";
+import { site } from "@/data/site";
+import { TONY_SLEEP, ZZ } from "@/lib/sprites";
+import { withBase } from "@/lib/url";
+import Layout from "@/layouts/Layout.astro";
+---
+
+<Layout
+  title={`Page not found · ${site.name}`}
+  description="This page doesn’t exist."
+>
+  <section
+    class="gutter flex min-h-svh flex-col justify-center py-16"
+    aria-labelledby="not-found-title"
+  >
+    <div class="flex items-end gap-1" aria-hidden="true">
+      <PixelSprite pixels={TONY_SLEEP} class="h-auto w-24" />
+      <PixelSprite pixels={ZZ} class="text-ink-dim mb-20 size-4" />
+    </div>
+    <h1
+      id="not-found-title"
+      class="mt-10 max-w-[12ch] text-[clamp(3rem,9vw,8rem)] text-balance"
+    >
+      This page wandered off.
+    </h1>
+    <p class="text-ink-dim mt-6">Tony is asleep on it.</p>
+    <a
+      href={withBase("/")}
+      class="underline-soft border-ink/10 hover:decoration-ink focus-visible:decoration-ink mt-12 max-w-md border-y py-4 text-[clamp(1.5rem,1.1rem+1.6vw,2.25rem)] font-semibold tracking-[-0.035em]"
+    >
+      Return home
+    </a>
+  </section>
+</Layout>

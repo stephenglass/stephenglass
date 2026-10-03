@@ -1,0 +1,38 @@
+---
+/**
+ * Tonelabs' dithered beams, behind the Tonelabs row only (drawn by
+ * src/scripts/tonelabs-dither.ts). Decorative: it drifts very slowly, pauses
+ * offscreen or in a hidden tab, is one still frame under reduced motion, and
+ * never reacts to the pointer. Without JS the row is plain obsidian.
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<canvas
+  data-dither
+  data-animating="false"
+  aria-hidden="true"
+  class:list={["dither block size-full", className]}
+></canvas>
+
+<style>
+  .dither {
+    image-rendering: pixelated;
+    /* Thin the beams behind the label and the address so both read cleanly. */
+    mask-image: linear-gradient(
+      to right,
+      transparent 4%,
+      black 40%,
+      black 62%,
+      transparent 96%
+    );
+  }
+</style>
+
+<script>
+  import "@/scripts/tonelabs-dither";
+</script>

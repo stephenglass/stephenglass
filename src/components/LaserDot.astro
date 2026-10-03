@@ -1,0 +1,48 @@
+---
+/**
+ * A laser pointer's dot that now and then plays along Tony's line while he
+ * watches it (see src/scripts/laser-dot.ts). It stays to his left, stopping
+ * short of his paws. Decorative: it never reacts to the pointer, pauses
+ * offscreen or in a hidden tab, and never shows under reduced motion or
+ * without JS. Place it beside PetTony, in the element whose top edge is the
+ * line.
+ */
+import PixelSprite from "@/components/PixelSprite.astro";
+import { sizeOf } from "@/lib/pixels";
+import { LASER } from "@/lib/sprites";
+
+const { width } = sizeOf(LASER);
+---
+
+<span
+  data-laser
+  data-cols={width}
+  data-animating="false"
+  hidden
+  aria-hidden="true"
+  style={`--laser-cols: ${width}`}
+  class="laser pointer-events-none"
+>
+  <PixelSprite pixels={LASER} class="block h-auto w-full" />
+</span>
+
+<style>
+  .laser {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(var(--laser-cols) * var(--tony-cell));
+    translate: 0 -50%;
+    opacity: 0;
+    transition: opacity 300ms var(--ease-out-soft);
+  }
+
+  /* Partly see-through, so the red sits quietly on the paper. */
+  .laser[data-on] {
+    opacity: 0.55;
+  }
+</style>
+
+<script>
+  import "@/scripts/laser-dot";
+</script>

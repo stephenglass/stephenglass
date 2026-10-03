@@ -1,0 +1,152 @@
+---
+/**
+ * Tony, sitting, on his own grid of `--tony-cell` pixels. Click to pet him
+ * (see src/scripts/pet.ts). Without JS he is a still picture inside a button
+ * that does nothing, which is harmless.
+ *
+ * Whatever he makes speaks the page's language: what rises from him is pixel
+ * art on his grid, and what he says is plain type.
+ */
+import PixelSprite from "@/components/PixelSprite.astro";
+import { DISSOLVE_STAGES, dissolve, sizeOf } from "@/lib/pixels";
+import {
+  PARTICLES,
+  TONY_COLS,
+  TONY_EYE_COL,
+  TONY_FRAMES,
+  TONY_PAWS_COL,
+} from "@/lib/sprites";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div
+  data-pet-root
+  data-paws-col={TONY_PAWS_COL}
+  data-eye-col={TONY_EYE_COL}
+  style={`--tony-cols: ${TONY_COLS}`}
+  class:list={["pet relative", className]}
+>
+  <span
+    data-pet-caption
+    hidden
+    aria-hidden="true"
+    class="pet__text pet__caption text-ink-dim absolute right-full mr-2 text-sm leading-none whitespace-nowrap select-none"
+  ></span>
+
+  <button
+    type="button"
+    data-pet
+    aria-label="Pet Tony"
+    class="pet__button relative block w-full touch-manipulation select-none"
+  >
+    <span data-pet-sprite class="block">
+      {Object.entries(TONY_FRAMES).map(([name, pixels]) => (
+        <PixelSprite
+          pixels={pixels}
+          data-frame={name}
+          data-active={name === "sit" ? "" : undefined}
+          class="block h-auto w-full"
+        />
+      ))}
+    </span>
+    <span
+      data-pet-layer
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-0 z-20"
+    ></span>
+  </button>
+
+  <span
+    data-pet-count
+    hidden
+    aria-hidden="true"
+    class="pet__text pet__count text-ink-dim absolute right-full bottom-0 text-sm leading-none tabular-nums select-none"
+  ></span>
+
+  {Object.entries(PARTICLES).map(([name, pixels]) => (
+    <template data-particle={name}>
+      <span class="pet-particle" style={`--w: ${sizeOf(pixels).width}`}>
+        {DISSOLVE_STAGES.map((amount, stage) => (
+          <PixelSprite
+            pixels={dissolve(pixels, amount)}
+            data-stage={String(stage)}
+            data-on={stage === 0 ? "" : undefined}
+            class="block h-auto w-full"
+          />
+        ))}
+      </span>
+    </template>
+  ))}
+</div>
+
+<style>
+  .pet {
+    width: calc(var(--tony-cols) * var(--tony-cell));
+  }
+
+  .pet__button {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    cursor: pointer;
+  }
+
+  /* A comfortable tap target, even when he is small. */
+  .pet__button::before {
+    content: "";
+    position: absolute;
+    inset: -0.75rem;
+  }
+
+  [data-pet-sprite] :global([data-frame]:not([data-active])) {
+    display: none;
+  }
+
+  /* What he says sits beside his head, level with his eyes. */
+  .pet__caption {
+    top: calc(6 * var(--tony-cell));
+  }
+
+  /* The count rests on the rule, a couple of cells clear of his paws. */
+  .pet__count {
+    margin-right: calc(1 * var(--tony-cell));
+    padding-bottom: calc(1 * var(--tony-cell));
+  }
+
+  /* Plain type that fades in and out like the rows' underline. */
+  .pet__text {
+    transition:
+      opacity 300ms var(--ease-out-soft),
+      display 300ms allow-discrete;
+  }
+
+  .pet__text[hidden] {
+    opacity: 0;
+  }
+
+  @starting-style {
+    .pet__text:not([hidden]) {
+      opacity: 0;
+    }
+  }
+
+  /* Particles start just above his head, on his grid. */
+  .pet :global(.pet-particle) {
+    position: absolute;
+    bottom: 100%;
+    left: calc(var(--x, 0) * var(--tony-cell));
+    width: calc(var(--w) * var(--tony-cell));
+  }
+
+  .pet :global(.pet-particle [data-stage]:not([data-on])) {
+    display: none;
+  }
+</style>
+
+<script>
+  import "@/scripts/pet";
+</script>
