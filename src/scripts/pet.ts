@@ -1,23 +1,19 @@
 /**
- * Pet Tony. Everything he does stays on his pixel grid: each pet he shuts
- * his eyes in a ^ and hops a cell, and a pixel heart rises a cell at a time
- * and dissolves in Bayer order. Milestones carry over from the original
- * site: a fish and a higher hop every 20th pet, an ear flick every 30th, a
- * "meow." every 15th and a flight of hearts every 50th.
- * Hovering or focusing a while makes him purr: "prrr" and slow blinks. At
- * rest he looks whichever way the laser dot tells him (a `tony:gaze` event).
+ * Pet Tony (see PetTony.astro). Everything he does stays on his pixel grid:
+ * each pet he shuts his eyes in a ^ and hops, and a pixel particle rises a
+ * cell at a time and dissolves in Bayer order (`reactionTo` has the
+ * milestones). Hovering or focusing a while makes him purr: "prrr" and slow
+ * blinks. At rest he looks whichever way the laser dot tells him (a
+ * `tony:gaze` event).
  *
  * Nothing rotates, scales or moves by less than a whole cell.
  */
 import type { Gaze } from "@/lib/laser";
+import { reactionTo } from "@/lib/petting";
+import type { ParticleName, TonyFrame } from "@/lib/sprites";
+import { reducedMotion, tonyCell } from "@/scripts/motion";
 
-const reducedMotion = window.matchMedia(
-  "(prefers-reduced-motion: reduce)",
-).matches;
 const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
-
-type Frame = "sit" | "look-left" | "blink" | "happy" | "ear-flick";
-type Particle = "heart" | "fish";
 
 /** Ms per cell of a hop, and of a particle's rise. */
 const HOP_STEP = 60;
@@ -26,10 +22,6 @@ const RISE_STEP = 85;
 const DISSOLVE_STEP = 90;
 /** How long a particle stays put under reduced motion, ms. */
 const STILL_MS = 600;
-/** Particles rise from above the middle of his head (cell column). */
-const HEAD_COL = 8;
-
-const particleFor = (n: number): Particle => (n % 20 === 0 ? "fish" : "heart");
 
 const randomInt = (low: number, high: number): number =>
   low + Math.floor(Math.random() * (high - low + 1));
@@ -53,8 +45,12 @@ function initPet(root: HTMLElement): void {
   const caption = root.querySelector<HTMLElement>("[data-pet-caption]");
   if (!button || !sprite || !layer || !count || !caption) return;
 
+  const frames = [...sprite.querySelectorAll<SVGElement>("[data-frame]")];
+  /** Particles rise from above his eyes. */
+  const headCol = Number(root.dataset.eyeCol);
+
   let pets = 0;
-  let mood: Frame = "sit";
+  let mood: TonyFrame = "sit";
   let gaze: Gaze = "ahead";
   let busy = false;
   let sequenceTimer = 0;
@@ -64,19 +60,13 @@ function initPet(root: HTMLElement): void {
   let meowing = false;
   let purring = false;
 
-  const cell = (): number =>
-    parseFloat(getComputedStyle(root).getPropertyValue("--tony-cell")) || 3;
-
-  const show = (frame: Frame): void => {
+  const show = (frame: TonyFrame): void => {
     mood = frame;
-    sprite
-      .querySelectorAll<SVGElement>("[data-frame]")
-      .forEach((svg) =>
-        svg.toggleAttribute("data-active", svg.dataset.frame === frame),
-      );
+    for (const svg of frames)
+      svg.toggleAttribute("data-active", svg.dataset.frame === frame);
   };
 
-  const rest = (): Frame => (gaze === "ahead" ? "sit" : `look-${gaze}`);
+  const rest = (): TonyFrame => (gaze === "ahead" ? "sit" : `look-${gaze}`);
   const resting = (): boolean => !busy && mood !== "blink";
 
   root.addEventListener("tony:gaze", (event) => {
@@ -85,7 +75,7 @@ function initPet(root: HTMLElement): void {
   });
 
   /** Show frames in turn, each for its ms, then settle back to rest. */
-  const play = (steps: readonly (readonly [Frame, number])[]): void => {
+  const play = (steps: readonly (readonly [TonyFrame, number])[]): void => {
     window.clearTimeout(sequenceTimer);
     busy = true;
     const next = (i: number): void => {
@@ -112,25 +102,25 @@ function initPet(root: HTMLElement): void {
   };
 
   const hop = (height: number): void => {
-    if (reducedMotion) return;
+    if (reducedMotion || height === 0) return;
     const cells = hopCells(height);
     sprite.getAnimations().forEach((animation) => animation.cancel());
-    sprite.animate(stepped(cells, cell()), {
+    sprite.animate(stepped(cells, tonyCell(root)), {
       duration: (cells.length - 1) * HOP_STEP,
     });
   };
 
   /** A pixel particle rises from his head and dissolves. */
-  const rise = (kind: Particle, offset: number, height: number): void => {
+  const rise = (kind: ParticleName, offset: number, height: number): void => {
     const template = root.querySelector<HTMLTemplateElement>(
       `template[data-particle="${kind}"]`,
     );
     const particle = template?.content.firstElementChild?.cloneNode(true);
     if (!(particle instanceof HTMLElement)) return;
-    const width = Number(particle.style.getPropertyValue("--w")) || 7;
+    const width = Number(particle.style.getPropertyValue("--w"));
     particle.style.setProperty(
       "--x",
-      String(Math.round(HEAD_COL - width / 2) + offset),
+      String(Math.round(headCol - width / 2) + offset),
     );
     layer.append(particle);
 
@@ -138,7 +128,7 @@ function initPet(root: HTMLElement): void {
     if (!reducedMotion) {
       const cells = Array.from({ length: height + 1 }, (_, i) => -i);
       travel = height * RISE_STEP;
-      particle.animate(stepped(cells, cell()), {
+      particle.animate(stepped(cells, tonyCell(root)), {
         duration: travel,
         fill: "forwards",
       });
@@ -159,7 +149,7 @@ function initPet(root: HTMLElement): void {
     window.setTimeout(() => particle.remove(), travel + DISSOLVE_STEP);
   };
 
-  /** Every 50th pet: a small flight of hearts, close around him. */
+  /** A small flight of hearts, close around him. */
   const flight = (): void => {
     [-12, -6, 0, 6, 12].forEach((offset, i) =>
       window.setTimeout(
@@ -181,10 +171,11 @@ function initPet(root: HTMLElement): void {
     count.hidden = false;
     count.textContent = `×${pets}`;
 
-    rise(particleFor(pets), randomInt(-3, 3), 5);
-    if (pets % 50 === 0) flight();
+    const reaction = reactionTo(pets);
+    rise(reaction.particle, randomInt(-3, 3), 5);
+    if (reaction.flight) flight();
 
-    if (pets % 30 === 0) {
+    if (reaction.earFlick) {
       play([
         ["ear-flick", 90],
         ["sit", 90],
@@ -193,10 +184,10 @@ function initPet(root: HTMLElement): void {
       ]);
     } else {
       play([["happy", 400]]);
-      hop(pets % 20 === 0 ? 3 : 1);
     }
+    hop(reaction.hop);
 
-    if (pets % 15 === 0) {
+    if (reaction.meow) {
       meowing = true;
       say();
       window.clearTimeout(meowTimer);

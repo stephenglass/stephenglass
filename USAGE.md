@@ -6,7 +6,7 @@ This repository is the source for my [personal landing page](https://stephen.gla
 - `npm run build` - Builds for production, emitting to `dist/`
 - `npm run preview` - Serves the production build at <http://localhost:4321/>
 - `npm run check` - Type-checks the project (`astro check`)
-- `npm test` - Unit tests for the pure helpers (Tony's sprites, the Tonelabs dither)
+- `npm test` - Unit tests for the pure helpers in `src/lib`
 - `npm run e2e` - Playwright end-to-end and accessibility tests (first run: `npx playwright install chromium`)
 - `npm run brand:assets` - Regenerates the favicon PNG, touch icon and `og.png` in `public/`
 

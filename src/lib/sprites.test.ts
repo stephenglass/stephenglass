@@ -1,26 +1,15 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { sizeOf } from "./pixels.ts";
+import { DISSOLVE_STAGES, dissolve, sizeOf, withLight } from "./pixels.ts";
 import {
-  DISSOLVE_STAGES,
-  dissolve,
-  FISH,
-  HEART,
   LASER,
   PALETTE,
-  TONY_BLINK,
-  TONY_HI_BLINK,
-  TONY_HI_EAR_FLICK,
-  TONY_HI_HAPPY,
-  TONY_HI_LOOK_LEFT,
-  TONY_HI_SIT,
-  TONY_LIT_BLINK,
-  TONY_LIT_EAR_FLICK,
-  TONY_LIT_HAPPY,
-  TONY_LIT_LOOK_LEFT,
-  TONY_LIT_SIT,
-  TONY_SIT,
+  PARTICLES,
+  TONY_EYE_COL,
+  TONY_FRAMES,
+  TONY_PAWS_COL,
+  TONY_SLEEP,
   ZZ,
 } from "./sprites.ts";
 
@@ -29,17 +18,18 @@ const silhouette = (pixels: readonly string[]): string =>
 const eyes = (pixels: readonly string[]): string =>
   pixels.join("\n").replaceAll(/[^w\n]/g, ".");
 
-test("each Tony's frames share one silhouette", () => {
-  for (const [sit, blink] of [
-    [TONY_SIT, TONY_BLINK],
-    [TONY_HI_SIT, TONY_HI_BLINK],
-    [TONY_LIT_SIT, TONY_LIT_BLINK],
-  ] as const) {
-    assert.deepEqual(sizeOf(blink), sizeOf(sit));
-    assert.equal(silhouette(blink), silhouette(sit));
-    assert.match(sit.join(""), /w/, "open eyes");
-    assert.doesNotMatch(blink.join(""), /w/, "shut eyes");
+const { sit, blink, happy } = TONY_FRAMES;
+const lookLeft = TONY_FRAMES["look-left"];
+const earFlick = TONY_FRAMES["ear-flick"];
+
+test("Tony's frames share one silhouette", () => {
+  for (const frame of [blink, lookLeft, happy]) {
+    assert.deepEqual(sizeOf(frame), sizeOf(sit));
+    assert.equal(silhouette(frame), silhouette(sit));
   }
+  assert.match(sit.join(""), /w/, "open eyes");
+  assert.doesNotMatch(blink.join(""), /w/, "shut eyes");
+  assert.notEqual(eyes(happy), eyes(sit));
 });
 
 test("Tony looks left by one pixel, nothing else changing", () => {
@@ -48,29 +38,37 @@ test("Tony looks left by one pixel, nothing else changing", () => {
       .split("\n")
       .map((row) => row.slice(1) + ".")
       .join("\n");
-  for (const [sit, left] of [
-    [TONY_HI_SIT, TONY_HI_LOOK_LEFT],
-    [TONY_LIT_SIT, TONY_LIT_LOOK_LEFT],
-  ] as const) {
-    assert.equal(silhouette(left), silhouette(sit));
-    assert.equal(eyes(left), shiftLeft(sit));
-  }
+  assert.equal(eyes(lookLeft), shiftLeft(sit));
 });
 
-test("happy Tony only changes his eyes; the ear flick only his ears", () => {
-  const rows = (pixels: readonly string[], from: number, to?: number) =>
-    pixels.slice(from, to).join("\n");
-  assert.equal(silhouette(TONY_HI_HAPPY), silhouette(TONY_HI_SIT));
-  assert.equal(silhouette(TONY_LIT_HAPPY), silhouette(TONY_LIT_SIT));
-  assert.notEqual(eyes(TONY_HI_HAPPY), eyes(TONY_HI_SIT));
-  assert.deepEqual(sizeOf(TONY_HI_EAR_FLICK), sizeOf(TONY_HI_SIT));
-  assert.notEqual(rows(TONY_HI_EAR_FLICK, 0, 3), rows(TONY_HI_SIT, 0, 3));
-  assert.equal(rows(TONY_HI_EAR_FLICK, 3), rows(TONY_HI_SIT, 3));
-  assert.equal(eyes(TONY_LIT_EAR_FLICK), eyes(TONY_LIT_SIT));
+test("the ear flick only changes his ears", () => {
+  const below = (pixels: readonly string[]) => silhouette(pixels.slice(3));
+  assert.deepEqual(sizeOf(earFlick), sizeOf(sit));
+  assert.notEqual(
+    silhouette(earFlick.slice(0, 3)),
+    silhouette(sit.slice(0, 3)),
+  );
+  assert.equal(below(earFlick), below(sit));
+  assert.equal(eyes(earFlick), eyes(sit));
+});
+
+test("Tony's measurements come from his drawing", () => {
+  assert.equal(TONY_PAWS_COL, 1);
+  assert.equal(TONY_EYE_COL, 8.5);
+});
+
+test("light keeps the silhouette and other keys, and comes from the right", () => {
+  const block = ["kkkkkk", "kkwkkk", "kkkkkk", "kkkkkk", "kkkkkk"];
+  const lit = withLight(block, 3, 0.8);
+  assert.equal(silhouette(lit), silhouette(block));
+  assert.equal(eyes(lit), eyes(block));
+  assert.match(lit.join(""), /d/, "some cells are lit");
+  // The floor row is dark at its left end.
+  assert.equal(sit.at(-1)?.replace(/^\.+/, "")[0], "k");
 });
 
 test("particles dissolve in Bayer order, a little more at each stage", () => {
-  for (const pixels of [HEART, FISH]) {
+  for (const pixels of Object.values(PARTICLES)) {
     assert.deepEqual(dissolve(pixels, 0), pixels);
     assert.match(dissolve(pixels, 1).join(""), /^\.+$/);
     let before = pixels.join("\n");
@@ -85,42 +83,23 @@ test("particles dissolve in Bayer order, a little more at each stage", () => {
   }
 });
 
+const ALL = [
+  TONY_SLEEP,
+  ZZ,
+  LASER,
+  ...Object.values(TONY_FRAMES),
+  ...Object.values(PARTICLES),
+];
+
 test("rows are all the same width", () => {
-  for (const pixels of [
-    TONY_SIT,
-    TONY_HI_SIT,
-    TONY_LIT_SIT,
-    TONY_HI_EAR_FLICK,
-    LASER,
-    HEART,
-    FISH,
-  ]) {
+  for (const pixels of ALL) {
     const { width } = sizeOf(pixels);
     for (const row of pixels) assert.equal(row.length, width);
   }
 });
 
-test("light keeps the silhouette and the eyes", () => {
-  assert.equal(silhouette(TONY_LIT_SIT), silhouette(TONY_HI_SIT));
-  assert.equal(eyes(TONY_LIT_SIT), eyes(TONY_HI_SIT));
-  assert.match(TONY_LIT_SIT.join(""), /d/, "some cells are lit");
-  // Light comes from the right: the floor row is dark at its left end.
-  assert.equal(TONY_LIT_SIT.at(-1)?.replace(/^\.+/, "")[0], "k");
-});
-
 test("every sprite key has a fill", () => {
-  for (const pixels of [
-    TONY_SIT,
-    TONY_LIT_SIT,
-    TONY_LIT_BLINK,
-    TONY_LIT_LOOK_LEFT,
-    TONY_LIT_HAPPY,
-    TONY_LIT_EAR_FLICK,
-    LASER,
-    ZZ,
-    HEART,
-    FISH,
-  ]) {
+  for (const pixels of ALL) {
     for (const cell of pixels.join("").replaceAll(".", "")) {
       assert.ok(PALETTE[cell], `no fill for "${cell}"`);
     }

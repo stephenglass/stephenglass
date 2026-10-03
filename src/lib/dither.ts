@@ -1,8 +1,6 @@
 /**
  * 1-bit ordered dithering of tonelabs' beams, for the Tonelabs row: a small
- * window into tonelabs.io. Ported from tonelabs' `src/scripts/dither.ts`
- * without its pointer lens (this site never reacts to the cursor). Pure
- * functions with erasable TypeScript only, so `node --test` imports it.
+ * window into tonelabs.io.
  */
 import { BAYER_8 } from "./bayer.ts";
 

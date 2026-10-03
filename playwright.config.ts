@@ -3,7 +3,6 @@ import { defineConfig, devices } from "@playwright/test";
 /**
  * E2E tests run against the production build (`astro preview`), so they see
  * exactly what GitHub Pages serves.
- * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
   testDir: "./e2e",

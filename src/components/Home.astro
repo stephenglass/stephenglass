@@ -1,6 +1,6 @@
 ---
 /**
- * The whole site: the name, fitted to its measure, and three links with Tony
+ * The home page: the name, fitted to its measure, and three links with Tony
  * perched on their top rule, where a laser dot now and then visits. Tonelabs
  * is the one dark row.
  *
@@ -13,16 +13,37 @@ import LayoutSwitch from "@/components/LayoutSwitch.astro";
 import PetTony from "@/components/PetTony.astro";
 import TonelabsDither from "@/components/TonelabsDither.astro";
 import { site } from "@/data/site";
+import { NAME_TYPE } from "@/lib/name";
 
 const links = [
-  { label: "GitHub", href: site.githubUrl, detail: "@stephenglass" },
+  {
+    label: "GitHub",
+    href: site.githubUrl,
+    detail: `@${new URL(site.githubUrl).pathname.slice(1)}`,
+  },
   { label: "Email", href: `mailto:${site.email}`, detail: site.email },
+  {
+    label: "Tonelabs",
+    href: site.tonelabsUrl,
+    detail: new URL(site.tonelabsUrl).host,
+    dark: true,
+  },
 ];
+
+const nameStyle = [
+  `--ink-em: ${NAME_TYPE.inkEm}`,
+  `margin-left: ${NAME_TYPE.bearingEm}em`,
+  `font-weight: ${NAME_TYPE.weight}`,
+  `letter-spacing: ${NAME_TYPE.trackingEm}em`,
+  `line-height: ${NAME_TYPE.lineHeight}`,
+].join("; ");
 ---
 
 <div class="page gutter min-h-svh">
   <div class="column">
-    <h1 class="name">{site.name}</h1>
+    <h1 class="name" style={nameStyle}>
+      {site.name}
+    </h1>
 
     <nav aria-label="Links" class="links relative">
       <LaserDot />
@@ -30,9 +51,23 @@ const links = [
       <ul>
         {links.map((link) => (
           <li>
-            <a href={link.href} class="row group border-ink/10 border-t">
-              <span class="row__label">{link.label}</span>
-              <span class="row__detail text-ink-dim">
+            <a
+              href={link.href}
+              class:list={[
+                "row",
+                link.dark
+                  ? "row--dark bg-obsidian text-bone relative isolate overflow-hidden"
+                  : "border-ink/10 border-t",
+              ]}
+            >
+              {link.dark && <TonelabsDither class="absolute inset-0 -z-10" />}
+              <span class="row__label underline-soft">{link.label}</span>
+              <span
+                class:list={[
+                  "row__detail",
+                  link.dark ? "text-bone-dim" : "text-ink-dim",
+                ]}
+              >
                 <span class="max-sm:sr-only">{link.detail}</span>
                 <svg class="row__arrow" viewBox="0 0 16 16" aria-hidden="true">
                   <path d="M4.5 11.5l7-7M5.5 4.5h6v6" />
@@ -41,21 +76,6 @@ const links = [
             </a>
           </li>
         ))}
-        <li>
-          <a
-            href={site.tonelabsUrl}
-            class="row row--tonelabs group bg-obsidian text-bone relative isolate overflow-hidden"
-          >
-            <TonelabsDither class="absolute inset-0 -z-10" />
-            <span class="row__label">Tonelabs</span>
-            <span class="row__detail text-bone-dim">
-              <span class="max-sm:sr-only">tonelabs.io</span>
-              <svg class="row__arrow" viewBox="0 0 16 16" aria-hidden="true">
-                <path d="M4.5 11.5l7-7M5.5 4.5h6v6" />
-              </svg>
-            </span>
-          </a>
-        </li>
       </ul>
     </nav>
   </div>
@@ -63,13 +83,12 @@ const links = [
 </div>
 
 <style>
-  /*
-   * The name fills its measure, ink edge to ink edge, on one line: `--k` is
-   * its ink width in em, measured with the real font.
-   */
+  /* Compact (default): name and links together, centred on the screen. */
   .page {
     --measure: 56rem;
     --tony-cell: 2px;
+    display: grid;
+    place-items: center;
   }
 
   @media (width >= 48rem) {
@@ -80,26 +99,14 @@ const links = [
 
   .column {
     container-type: inline-size;
-  }
-
-  .name {
-    --k: 6.3;
-    font-size: calc(min(100cqw, var(--measure)) / var(--k));
-    line-height: 0.86;
-    /* Pull the S's side bearing out so its ink sits on the gutter. */
-    margin-left: -0.027em;
-  }
-
-  /* Compact (default): name and links together, centred on the screen. */
-  .page {
-    display: grid;
-    place-items: center;
-  }
-
-  .column {
     width: 100%;
     max-width: var(--measure);
     padding-block: 4rem;
+  }
+
+  /* The name fills its measure on one line (see src/lib/name.ts). */
+  .name {
+    font-size: calc(min(100cqw, var(--measure)) / var(--ink-em));
   }
 
   .links {
@@ -125,15 +132,11 @@ const links = [
     margin-top: 8rem;
   }
 
-  /*
-   * Tony sits on the links' top rule, at the right, out of the way. He
-   * scales by whole pixels so his cells stay crisp.
-   */
+  /* Tony sits on the links' top rule, at the right, out of the way. */
   .links :global(.links__tony) {
     position: absolute;
     right: 0.75rem;
     bottom: 100%;
-    width: calc(28 * var(--tony-cell));
   }
 
   .row {
@@ -149,9 +152,6 @@ const links = [
     font-weight: 650;
     letter-spacing: -0.035em;
     line-height: 1.1;
-    text-decoration: underline 2px transparent;
-    text-underline-offset: 0.16em;
-    transition: text-decoration-color 300ms var(--ease-out-soft);
   }
 
   .row:hover .row__label,
@@ -182,13 +182,13 @@ const links = [
   }
 
   /* The dark window bleeds past the column so its label still lines up. */
-  .row--tonelabs {
+  .row--dark {
     margin-inline: -1rem;
     padding-inline: 1rem;
   }
 
   @media (width >= 48rem) {
-    .row--tonelabs {
+    .row--dark {
       margin-inline: -1.25rem;
       padding-inline: 1.25rem;
     }

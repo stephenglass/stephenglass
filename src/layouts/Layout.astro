@@ -4,6 +4,7 @@ import "@/styles/global.css";
 import { Font } from "astro:assets";
 
 import { site } from "@/data/site";
+import { LAYOUT_KEY, LAYOUTS } from "@/lib/layout";
 import { absoluteUrl, withBase } from "@/lib/url";
 
 interface Props {
@@ -60,17 +61,18 @@ const personJsonLd = JSON.stringify({
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="Stephen Glass, with Tony, a black pixel-art cat."
+      content={`${site.name}, with Tony, a black pixel-art cat.`}
     />
     <meta name="twitter:card" content="summary_large_image" />
 
     <script type="application/ld+json" set:html={personJsonLd} />
     <Font cssVariable="--font-instrument-sans" preload />
     <!-- Apply a remembered layout (LayoutSwitch) before first paint. -->
-    <script is:inline>
+    <script is:inline define:vars={{ key: LAYOUT_KEY, layouts: LAYOUTS }}>
       try {
-        if (localStorage.getItem("stephen.glass:layout") === "full")
-          document.documentElement.dataset.layout = "full";
+        const layout = localStorage.getItem(key);
+        if (layouts.includes(layout))
+          document.documentElement.dataset.layout = layout;
       } catch {}
     </script>
   </head>

@@ -1,24 +1,20 @@
 ---
 /**
- * Tony, sitting. Click to pet him (see src/scripts/pet.ts). Without JS he is
- * a still picture inside a button that does nothing, which is harmless. He
- * fills the width the caller gives him.
+ * Tony, sitting, on his own grid of `--tony-cell` pixels. Click to pet him
+ * (see src/scripts/pet.ts). Without JS he is a still picture inside a button
+ * that does nothing, which is harmless.
  *
  * Whatever he makes speaks the page's language: what rises from him is pixel
- * art on his own grid (`--tony-cell`), and what he says is plain type.
+ * art on his grid, and what he says is plain type.
  */
 import PixelSprite from "@/components/PixelSprite.astro";
-import { sizeOf } from "@/lib/pixels";
+import { DISSOLVE_STAGES, dissolve, sizeOf } from "@/lib/pixels";
 import {
-  DISSOLVE_STAGES,
-  dissolve,
-  FISH,
-  HEART,
-  TONY_LIT_BLINK,
-  TONY_LIT_EAR_FLICK,
-  TONY_LIT_HAPPY,
-  TONY_LIT_LOOK_LEFT,
-  TONY_LIT_SIT,
+  PARTICLES,
+  TONY_COLS,
+  TONY_EYE_COL,
+  TONY_FRAMES,
+  TONY_PAWS_COL,
 } from "@/lib/sprites";
 
 interface Props {
@@ -26,22 +22,15 @@ interface Props {
 }
 
 const { class: className } = Astro.props;
-
-const frames = [
-  { name: "sit", pixels: TONY_LIT_SIT },
-  { name: "look-left", pixels: TONY_LIT_LOOK_LEFT },
-  { name: "blink", pixels: TONY_LIT_BLINK },
-  { name: "happy", pixels: TONY_LIT_HAPPY },
-  { name: "ear-flick", pixels: TONY_LIT_EAR_FLICK },
-];
-
-const particles = [
-  { name: "heart", pixels: HEART },
-  { name: "fish", pixels: FISH },
-];
 ---
 
-<div data-pet-root class:list={["pet relative", className]}>
+<div
+  data-pet-root
+  data-paws-col={TONY_PAWS_COL}
+  data-eye-col={TONY_EYE_COL}
+  style={`--tony-cols: ${TONY_COLS}`}
+  class:list={["pet relative", className]}
+>
   <span
     data-pet-caption
     hidden
@@ -55,12 +44,12 @@ const particles = [
     aria-label="Pet Tony"
     class="pet__button relative block w-full touch-manipulation select-none"
   >
-    <span data-pet-sprite class="pet__sprite block">
-      {frames.map((frame) => (
+    <span data-pet-sprite class="block">
+      {Object.entries(TONY_FRAMES).map(([name, pixels]) => (
         <PixelSprite
-          pixels={frame.pixels}
-          data-frame={frame.name}
-          data-active={frame.name === "sit" ? "" : undefined}
+          pixels={pixels}
+          data-frame={name}
+          data-active={name === "sit" ? "" : undefined}
           class="block h-auto w-full"
         />
       ))}
@@ -79,7 +68,7 @@ const particles = [
     class="pet__text pet__count text-ink-dim absolute right-full bottom-0 text-sm leading-none tabular-nums select-none"
   ></span>
 
-  {particles.map(({ name, pixels }) => (
+  {Object.entries(PARTICLES).map(([name, pixels]) => (
     <template data-particle={name}>
       <span class="pet-particle" style={`--w: ${sizeOf(pixels).width}`}>
         {DISSOLVE_STAGES.map((amount, stage) => (
@@ -97,7 +86,7 @@ const particles = [
 
 <style>
   .pet {
-    --cell: var(--tony-cell, 3px);
+    width: calc(var(--tony-cols) * var(--tony-cell));
   }
 
   .pet__button {
@@ -113,19 +102,19 @@ const particles = [
     inset: -0.75rem;
   }
 
-  .pet__sprite :global([data-frame]:not([data-active])) {
+  [data-pet-sprite] :global([data-frame]:not([data-active])) {
     display: none;
   }
 
   /* What he says sits beside his head, level with his eyes. */
   .pet__caption {
-    top: calc(6 * var(--cell));
+    top: calc(6 * var(--tony-cell));
   }
 
   /* The count rests on the rule, a couple of cells clear of his paws. */
   .pet__count {
-    margin-right: calc(1 * var(--cell));
-    padding-bottom: calc(1 * var(--cell));
+    margin-right: calc(1 * var(--tony-cell));
+    padding-bottom: calc(1 * var(--tony-cell));
   }
 
   /* Plain type that fades in and out like the rows' underline. */
@@ -149,9 +138,8 @@ const particles = [
   .pet :global(.pet-particle) {
     position: absolute;
     bottom: 100%;
-    left: calc(var(--x, 0) * var(--cell));
-    width: calc(var(--w) * var(--cell));
-    color: var(--tony);
+    left: calc(var(--x, 0) * var(--tony-cell));
+    width: calc(var(--w) * var(--tony-cell));
   }
 
   .pet :global(.pet-particle [data-stage]:not([data-on])) {

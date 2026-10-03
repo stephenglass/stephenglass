@@ -1,10 +1,9 @@
 ---
 /**
- * Tonelabs' dithered beams, behind the Tonelabs row only. Each canvas pixel
- * covers `CELL_PX` CSS pixels and is scaled up crisp. Decorative: it drifts
- * very slowly, pauses offscreen or in a hidden tab, is one still frame under
- * reduced motion, and never reacts to the pointer. Without JS the row is
- * plain obsidian.
+ * Tonelabs' dithered beams, behind the Tonelabs row only (drawn by
+ * src/scripts/tonelabs-dither.ts). Decorative: it drifts very slowly, pauses
+ * offscreen or in a hidden tab, is one still frame under reduced motion, and
+ * never reacts to the pointer. Without JS the row is plain obsidian.
  */
 interface Props {
   class?: string;
@@ -17,12 +16,13 @@ const { class: className } = Astro.props;
   data-dither
   data-animating="false"
   aria-hidden="true"
-  class:list={["dither pixelated block size-full", className]}
+  class:list={["dither block size-full", className]}
 ></canvas>
 
 <style>
-  /* Thin the beams behind the label and the address so both read cleanly. */
   .dither {
+    image-rendering: pixelated;
+    /* Thin the beams behind the label and the address so both read cleanly. */
     mask-image: linear-gradient(
       to right,
       transparent 4%,
@@ -34,93 +34,5 @@ const { class: className } = Astro.props;
 </style>
 
 <script>
-  import { beamsIntensity, renderDither, type Rgba } from "@/lib/dither";
-
-  const CELL_PX = 3;
-  const FRAME_MS = 1000 / 30;
-  const RESOLVE_MS = 1200;
-  /** Slower than tonelabs' hero: a drift you notice only when you look. */
-  const TIME_SCALE = 0.5;
-  /** Frame time used under reduced motion. */
-  const STILL_T = 14;
-  /** Bone at low alpha, as on tonelabs.io. */
-  const COLOR: Rgba = [246, 236, 221, 96];
-
-  const reducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)",
-  ).matches;
-
-  function initDither(canvas: HTMLCanvasElement): void {
-    const context = canvas.getContext("2d");
-    if (!context) return;
-
-    let image: ImageData | null = null;
-    let visible = false;
-    let running = false;
-    let lastFrame = 0;
-    const startedAt = performance.now();
-
-    const draw = (now: number): void => {
-      if (!image) return;
-      const t = reducedMotion ? STILL_T : (now / 1000) * TIME_SCALE;
-      const density = reducedMotion
-        ? 1
-        : Math.min(1, (now - startedAt) / RESOLVE_MS);
-      renderDither(
-        image.data,
-        image.width,
-        image.height,
-        beamsIntensity,
-        t,
-        COLOR,
-        density * (2 - density),
-      );
-      context.putImageData(image, 0, 0);
-    };
-
-    const resize = (): void => {
-      const width = Math.max(1, Math.ceil(canvas.clientWidth / CELL_PX));
-      const height = Math.max(1, Math.ceil(canvas.clientHeight / CELL_PX));
-      if (image && image.width === width && image.height === height) return;
-      canvas.width = width;
-      canvas.height = height;
-      image = context.createImageData(width, height);
-      draw(performance.now());
-    };
-
-    const loop = (now: number): void => {
-      if (!visible || document.hidden) {
-        running = false;
-        return;
-      }
-      if (now - lastFrame >= FRAME_MS) {
-        lastFrame = now;
-        draw(now);
-      }
-      requestAnimationFrame(loop);
-    };
-
-    const start = (): void => {
-      if (running || !visible || document.hidden) return;
-      running = true;
-      requestAnimationFrame(loop);
-    };
-
-    new ResizeObserver(resize).observe(canvas);
-    resize();
-
-    if (reducedMotion) return;
-
-    new IntersectionObserver(([entry]) => {
-      visible = entry?.isIntersecting ?? false;
-      canvas.dataset.animating = String(visible);
-      start();
-    }).observe(canvas);
-
-    document.addEventListener("visibilitychange", start);
-  }
-
-  document
-    .querySelectorAll<HTMLCanvasElement>("canvas[data-dither]")
-    .forEach(initDither);
+  import "@/scripts/tonelabs-dither";
 </script>

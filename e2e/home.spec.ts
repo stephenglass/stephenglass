@@ -1,8 +1,12 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
+
+import { TONY_COLS, TONY_PAWS_COL } from "../src/lib/sprites.ts";
 
 const links = (page: Page) =>
   page.getByRole("navigation", { name: "Links" }).getByRole("link");
+const tony = (page: Page) => page.getByRole("button", { name: "Pet Tony" });
+const laser = (page: Page) => page.locator("[data-laser]");
 
 /**
  * Run the fake clock until the laser's first visit begins. Its timer is set
@@ -13,9 +17,21 @@ const untilLaserVisits = (page: Page) =>
   expect
     .poll(async () => {
       await page.clock.runFor(1000);
-      return page.locator("[data-laser]").getAttribute("data-animating");
+      return laser(page).getAttribute("data-animating");
     })
     .toBe("true");
+
+/** Load the page with every dart heading as far right as the dot may go. */
+const gotoWithLaserFarRight = async (page: Page) => {
+  await page.addInitScript(() => (Math.random = () => 0.999));
+  await page.goto("/");
+};
+
+const box = async (locator: Locator) => {
+  const result = await locator.boundingBox();
+  expect(result).toBeTruthy();
+  return result ?? { x: 0, y: 0, width: 0, height: 0 };
+};
 
 test.describe("Home page", () => {
   test.beforeEach(async ({ page }) => {
@@ -34,22 +50,17 @@ test.describe("Home page", () => {
     page,
   }) => {
     await expect(links(page)).toHaveCount(3);
-    await expect(links(page).nth(0)).toHaveAttribute(
-      "href",
-      "https://github.com/stephenglass",
-    );
-    await expect(links(page).nth(1)).toHaveAttribute(
-      "href",
-      "mailto:contact@stephen.glass",
-    );
-    await expect(links(page).nth(2)).toHaveAttribute(
-      "href",
-      "https://tonelabs.io",
-    );
-    await expect(links(page).nth(0)).toContainText("@stephenglass");
-    for (const [i, name] of ["GitHub", "Email", "Tonelabs"].entries()) {
+    for (const [i, [name, href]] of (
+      [
+        ["GitHub", "https://github.com/stephenglass"],
+        ["Email", "mailto:contact@stephen.glass"],
+        ["Tonelabs", "https://tonelabs.io"],
+      ] as const
+    ).entries()) {
       await expect(links(page).nth(i)).toContainText(name);
+      await expect(links(page).nth(i)).toHaveAttribute("href", href);
     }
+    await expect(links(page).nth(0)).toContainText("@stephenglass");
   });
 
   test("shows Tonelabs by name only", async ({ page }) => {
@@ -67,22 +78,17 @@ test.describe("Home page", () => {
   });
 
   test("everything fits on one screen", async ({ page }) => {
-    const tonelabs = await links(page).nth(2).boundingBox();
-    const viewport = page.viewportSize();
-    expect(tonelabs && viewport).toBeTruthy();
-    if (!tonelabs || !viewport) return;
-    expect(tonelabs.y + tonelabs.height).toBeLessThanOrEqual(viewport.height);
+    const tonelabs = await box(links(page).nth(2));
+    expect(tonelabs.y + tonelabs.height).toBeLessThanOrEqual(
+      page.viewportSize()?.height ?? 0,
+    );
   });
 
   test("Tony sits on the links, at the right", async ({ page }) => {
-    const tony = await page
-      .getByRole("button", { name: "Pet Tony" })
-      .boundingBox();
-    const github = await links(page).nth(0).boundingBox();
-    expect(tony && github).toBeTruthy();
-    if (!tony || !github) return;
-    expect(Math.abs(tony.y + tony.height - github.y)).toBeLessThanOrEqual(1);
-    expect(tony.x).toBeGreaterThan(github.x + github.width / 2);
+    const cat = await box(tony(page));
+    const github = await box(links(page).nth(0));
+    expect(Math.abs(cat.y + cat.height - github.y)).toBeLessThanOrEqual(1);
+    expect(cat.x).toBeGreaterThan(github.x + github.width / 2);
   });
 
   test("exposes social and icon assets", async ({ page, request }) => {
@@ -105,8 +111,7 @@ test.describe("Home page", () => {
   });
 
   test("Tony likes being petted", async ({ page }) => {
-    const tony = page.getByRole("button", { name: "Pet Tony" });
-    for (let i = 0; i < 15; i++) await tony.click();
+    for (let i = 0; i < 15; i++) await tony(page).click();
     await expect(page.locator("[data-pet-count]")).toHaveText("×15");
     await expect(page.getByText("meow.")).toBeVisible();
   });
@@ -120,95 +125,18 @@ test.describe("Home page", () => {
           ).length,
       );
     const overlays = await fixed();
-    const tony = page.getByRole("button", { name: "Pet Tony" });
-    const before = await tony.boundingBox();
-    await tony.click();
+    const before = await tony(page).boundingBox();
+    await tony(page).click();
     const layer = page.locator("[data-pet-layer]");
     await expect(layer.locator(".pet-particle svg").first()).toBeAttached();
     expect(await layer.textContent()).not.toMatch(/\p{Extended_Pictographic}/u);
 
-    for (let i = 1; i < 50; i++) await tony.click();
+    for (let i = 1; i < 50; i++) await tony(page).click();
     expect(await fixed()).toBe(overlays);
     await expect(layer.locator(".pet-particle")).toHaveCount(0, {
       timeout: 3000,
     });
-    expect(await tony.boundingBox()).toEqual(before);
-  });
-
-  test("under reduced motion Tony stays put when petted", async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.reload();
-    await page.getByRole("button", { name: "Pet Tony" }).click();
-    await expect(page.locator(".pet-particle")).toHaveCount(1);
-    // Only the plain type may fade in; nothing travels.
-    const moving = await page.evaluate(
-      () =>
-        document
-          .querySelector("[data-pet-root]")
-          ?.getAnimations({ subtree: true })
-          .filter((animation) => !(animation instanceof CSSTransition)).length,
-    );
-    expect(moving).toBe(0);
-  });
-
-  test("a laser dot visits now and then, and Tony watches it", async ({
-    page,
-  }) => {
-    await page.clock.install();
-    await page.goto("/");
-    const dot = page.locator("[data-laser]");
-    await expect(dot).toHaveAttribute("aria-hidden", "true");
-    await expect(dot).toHaveAttribute("data-animating", "false");
-
-    await untilLaserVisits(page);
-    await expect
-      .poll(async () => {
-        await page.clock.runFor(500);
-        return page
-          .locator("[data-pet-sprite] [data-active]")
-          .getAttribute("data-frame");
-      })
-      .toBe("look-left");
-
-    // The visit ends within 15s.
-    await page.clock.fastForward(16_000);
-    await page.clock.runFor(100);
-    await expect(dot).toHaveAttribute("data-animating", "false");
-  });
-
-  test("the laser dot never goes under Tony", async ({ page }) => {
-    // Every dart heads as far right as the dot may go.
-    await page.addInitScript(() => (Math.random = () => 0.999));
-    await page.clock.install();
-    await page.goto("/");
-    await untilLaserVisits(page);
-    await page.clock.runFor(1000);
-    const dot = await page.locator("[data-laser]").boundingBox();
-    const tony = await page
-      .getByRole("button", { name: "Pet Tony" })
-      .boundingBox();
-    expect(dot && tony).toBeTruthy();
-    if (!dot || !tony) return;
-    // Tony's ink starts one cell (of 28) into his box.
-    const paws = tony.x + tony.width / 28;
-    expect(dot.x + dot.width).toBeLessThan(paws);
-    expect(dot.x + dot.width).toBeGreaterThan(paws - dot.width);
-  });
-
-  test("the laser dot keeps clear of Tony's pet count", async ({ page }) => {
-    await page.addInitScript(() => (Math.random = () => 0.999));
-    await page.clock.install();
-    await page.goto("/");
-    await page.getByRole("button", { name: "Pet Tony" }).click();
-    const count = page.locator("[data-pet-count]");
-    await expect(count).toHaveText("×1");
-    await untilLaserVisits(page);
-    await page.clock.runFor(1000);
-    const dot = await page.locator("[data-laser]").boundingBox();
-    const box = await count.boundingBox();
-    expect(dot && box).toBeTruthy();
-    if (!dot || !box) return;
-    expect(dot.x + dot.width).toBeLessThan(box.x);
+    expect(await tony(page).boundingBox()).toEqual(before);
   });
 
   test("tab order follows the page", async ({ page, isMobile }) => {
@@ -259,37 +187,111 @@ test.describe("Home page", () => {
 
     await compact.click();
     await page.reload();
-    await expect(html).not.toHaveAttribute("data-layout", /./);
+    await expect(html).toHaveAttribute("data-layout", "compact");
+    await expect(compact).toHaveAttribute("aria-pressed", "true");
   });
 
-  test("the Tonelabs dither is decorative and still under reduced motion", async ({
-    page,
-  }) => {
+  test("the Tonelabs dither is decorative and drifts", async ({ page }) => {
     const canvas = page.locator("canvas[data-dither]");
     await expect(canvas).toHaveAttribute("aria-hidden", "true");
     await expect(canvas).toHaveAttribute("data-animating", "true");
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.reload();
-    await expect(canvas).toHaveAttribute("data-animating", "false");
+  });
+});
+
+test.describe("Under reduced motion", () => {
+  test.use({ contextOptions: { reducedMotion: "reduce" } });
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
   });
 
-  test("the laser dot stays away under reduced motion", async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.clock.install();
-    await page.goto("/");
-    await page.clock.runFor(6000);
-    await expect(page.locator("[data-laser]")).toBeHidden();
+  test("Tony stays put when petted", async ({ page }) => {
+    await tony(page).click();
+    await expect(page.locator(".pet-particle")).toHaveCount(1);
+    // Only the plain type may fade in; nothing travels.
+    const moving = await page.evaluate(
+      () =>
+        document
+          .querySelector("[data-pet-root]")
+          ?.getAnimations({ subtree: true })
+          .filter((animation) => !(animation instanceof CSSTransition)).length,
+    );
+    expect(moving).toBe(0);
+  });
+
+  test("the Tonelabs dither holds still", async ({ page }) => {
+    await expect(page.locator("canvas[data-dither]")).toHaveAttribute(
+      "data-animating",
+      "false",
+    );
   });
 
   test("has no serious accessibility violations", async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.reload();
     const results = await new AxeBuilder({ page }).analyze();
     const serious = results.violations.filter(
       (violation) =>
         violation.impact === "serious" || violation.impact === "critical",
     );
     expect(serious).toEqual([]);
+  });
+});
+
+test.describe("Laser dot", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.clock.install();
+  });
+
+  test("visits now and then, and Tony watches it", async ({ page }) => {
+    await page.goto("/");
+    await expect(laser(page)).toHaveAttribute("aria-hidden", "true");
+    await expect(laser(page)).toHaveAttribute("data-animating", "false");
+
+    await untilLaserVisits(page);
+    await expect
+      .poll(async () => {
+        await page.clock.runFor(500);
+        return page
+          .locator("[data-pet-sprite] [data-active]")
+          .getAttribute("data-frame");
+      })
+      .toBe("look-left");
+
+    // The visit ends within 15s.
+    await page.clock.fastForward(16_000);
+    await page.clock.runFor(100);
+    await expect(laser(page)).toHaveAttribute("data-animating", "false");
+  });
+
+  test("never goes under Tony", async ({ page }) => {
+    await gotoWithLaserFarRight(page);
+    await untilLaserVisits(page);
+    await page.clock.runFor(1000);
+    const dot = await box(laser(page));
+    const cat = await box(tony(page));
+    const paws = cat.x + (cat.width * TONY_PAWS_COL) / TONY_COLS;
+    expect(dot.x + dot.width).toBeLessThan(paws);
+    expect(dot.x + dot.width).toBeGreaterThan(paws - dot.width);
+  });
+
+  test("keeps clear of Tony's pet count", async ({ page }) => {
+    await gotoWithLaserFarRight(page);
+    await tony(page).click();
+    const count = page.locator("[data-pet-count]");
+    await expect(count).toHaveText("×1");
+    await untilLaserVisits(page);
+    await page.clock.runFor(1000);
+    const dot = await box(laser(page));
+    expect(dot.x + dot.width).toBeLessThan((await box(count)).x);
+  });
+
+  test.describe("under reduced motion", () => {
+    test.use({ contextOptions: { reducedMotion: "reduce" } });
+
+    test("stays away", async ({ page }) => {
+      await page.goto("/");
+      await page.clock.runFor(6000);
+      await expect(laser(page)).toBeHidden();
+    });
   });
 });
 
@@ -302,6 +304,6 @@ test.describe("Without JavaScript", () => {
     for (const link of await links(page).all())
       await expect(link).toBeVisible();
     await expect(page.locator("[data-layout-switch]")).toBeHidden();
-    await expect(page.locator("[data-laser]")).toBeHidden();
+    await expect(laser(page)).toBeHidden();
   });
 });

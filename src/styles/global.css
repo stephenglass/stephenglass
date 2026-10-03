@@ -1,11 +1,7 @@
 @import "tailwindcss";
 
-/*
- * stephen.glass: one screen of paper and ink. The name is the design; the
- * only other voice is the Tonelabs row, a small obsidian window with
- * tonelabs' own dithered beams.
- */
 @theme {
+  /* Keep in step with src/lib/palette.ts (a test checks). */
   --color-paper: #f7f6f4;
   --color-ink: #16131a;
   --color-ink-dim: #5c5762;
@@ -24,8 +20,6 @@
   html {
     color-scheme: light;
     -webkit-text-size-adjust: 100%;
-    /* Tony's fill for inline sprites. */
-    --tony: var(--color-ink);
   }
 
   body {
@@ -61,8 +55,16 @@
   }
 }
 
-/* Pixel art scales by whole cells; never smooth it. */
-@utility pixelated {
-  image-rendering: pixelated;
-  shape-rendering: crispEdges;
+/*
+ * Links answer hover and focus with an underline only: set the colour with
+ * `decoration-current` (or a parent's state) to show it.
+ */
+@utility underline-soft {
+  text-decoration-line: underline;
+  text-decoration-thickness: 2px;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.16em;
+  transition-property: color, text-decoration-color;
+  transition-duration: 300ms;
+  transition-timing-function: var(--ease-out-soft);
 }

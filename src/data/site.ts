@@ -1,21 +1,13 @@
-export interface SiteConfig {
-  name: string;
-  /** The browser tab's title for the home page. */
-  title: string;
-  description: string;
-  email: string;
-  githubUrl: string;
-  tonelabsUrl: string;
-  /** Browser UI colour; matches the paper. */
-  themeColor: string;
-}
+import { PAPER } from "@/lib/palette";
 
-export const site: SiteConfig = {
+export const site = {
   name: "Stephen Glass",
+  /** The home page's tab title. */
   title: "Stephen Glass · SWE",
   description: "Stephen Glass on GitHub, by email, and at Tonelabs.",
   email: "contact@stephen.glass",
   githubUrl: "https://github.com/stephenglass",
   tonelabsUrl: "https://tonelabs.io",
-  themeColor: "#f7f6f4",
-};
+  /** Browser UI colour; matches the paper. */
+  themeColor: PAPER,
+} as const;

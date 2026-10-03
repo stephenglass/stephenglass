@@ -1,7 +1,7 @@
 ---
 /**
- * A sprite from src/lib/sprites.ts as inline SVG. Tony's body reads
- * `--tony`; the sleep mark follows the text colour.
+ * A sprite from src/lib/sprites.ts as inline SVG. The sleep mark (`z`)
+ * follows the text colour.
  */
 import { sizeOf, toRuns, type Pixels } from "@/lib/pixels";
 import { PALETTE } from "@/lib/sprites";
@@ -9,7 +9,7 @@ import { PALETTE } from "@/lib/sprites";
 interface Props {
   pixels: Pixels;
   class?: string;
-  [attribute: `data-${string}`]: string | boolean | undefined;
+  [attribute: `data-${string}`]: string | number | boolean | undefined;
 }
 
 const { pixels, class: className, ...rest } = Astro.props;
@@ -17,7 +17,6 @@ const { width, height } = sizeOf(pixels);
 
 const FILLS: Readonly<Record<string, string>> = {
   ...PALETTE,
-  k: "var(--tony)",
   z: "currentColor",
 };
 ---
