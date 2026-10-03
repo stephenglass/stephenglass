@@ -23,7 +23,7 @@ test.describe("Home page", () => {
   });
 
   test("shows Stephen's name and nothing else to read", async ({ page }) => {
-    await expect(page).toHaveTitle("Stephen Glass");
+    await expect(page).toHaveTitle("Stephen Glass · SWE");
     await expect(
       page.getByRole("heading", { level: 1, name: "Stephen Glass" }),
     ).toBeVisible();

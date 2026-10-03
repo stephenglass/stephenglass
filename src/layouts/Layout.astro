@@ -11,7 +11,7 @@ interface Props {
   description?: string;
 }
 
-const { title = site.name, description = site.description } = Astro.props;
+const { title = site.title, description = site.description } = Astro.props;
 
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
 const socialImageUrl = absoluteUrl("og.png", Astro.site);

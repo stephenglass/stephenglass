@@ -4,7 +4,7 @@
  * are the laser dot's core and halo. The particles use h and j (rose
  * pink), b (slate blue) and c (pale blue).
  *
- * Pure data: shared by build-time SVGs, the favicon and the brand-asset script.
+ * Pure data: shared by build-time SVGs and the brand-asset script.
  */
 import type { Pixels } from "./pixels";
 

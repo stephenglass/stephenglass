@@ -1,6 +1,6 @@
 /**
- * Renders the PNG icons and the social image from the same sprites the site
- * uses, with the real Instrument Sans file. Run with
+ * Renders the PNG icons and the social image from the same icon and sprites
+ * the site uses, with the real Instrument Sans file. Run with
  * `npm run brand:assets` (Node 24 strips the types natively). Outputs in
  * public/ are committed, so this only needs re-running when they change.
  * Adapted from tonelabs' script of the same name.
@@ -11,7 +11,8 @@ import { fileURLToPath } from "node:url";
 import { chromium, type Page } from "@playwright/test";
 
 import { toSvg } from "../src/lib/pixels.ts";
-import { PALETTE, TONY_LIT_SIT, TONY_SIT } from "../src/lib/sprites.ts";
+import { faviconSvg } from "../src/lib/icon.ts";
+import { PALETTE, TONY_LIT_SIT } from "../src/lib/sprites.ts";
 
 const root = (path: string): string =>
   fileURLToPath(new URL(`../${path}`, import.meta.url));
@@ -31,19 +32,16 @@ interface Asset {
   body: string;
 }
 
-/** Tony at `cell` px per pixel. */
-const tony = (cell: number): string => toSvg(TONY_SIT, PALETTE, cell);
-
-const icon = (path: string, size: number, cell: number): Asset => ({
+const icon = (path: string, size: number): Asset => ({
   path,
   width: size,
   height: size,
-  body: `<div class="fill center" style="background:${PAPER}">${tony(cell)}</div>`,
+  body: `<div class="fill">${faviconSvg()}</div>`,
 });
 
 const assets: Asset[] = [
-  icon("public/favicon-32x32.png", 32, 1),
-  icon("public/apple-touch-icon.png", 180, 8),
+  icon("public/favicon-32x32.png", 32),
+  icon("public/apple-touch-icon.png", 180),
   {
     path: "public/og.png",
     width: 1200,

@@ -1,12 +1,13 @@
 ---
 import PixelSprite from "@/components/PixelSprite.astro";
+import { site } from "@/data/site";
 import { TONY_SLEEP, ZZ } from "@/lib/sprites";
 import { withBase } from "@/lib/url";
 import Layout from "@/layouts/Layout.astro";
 ---
 
 <Layout
-  title="Page not found - Stephen Glass"
+  title={`Page not found · ${site.name}`}
   description="This page doesn’t exist."
 >
   <section
