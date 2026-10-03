@@ -56,26 +56,26 @@ export const TONY_SLEEP: Pixels = TONY_BLINK;
  * On the page he is lit with `withLight` (see TONY_LIT_*).
  */
 const HI_OPEN = [
-  ".kkkkwwkkkkwwkkkk...........",
-  ".kkkkkwkkkkwkkkkk...........",
+  ".kkkkwwkkkwwkkkk............",
+  ".kkkkkwkkkwkkkkk............",
 ];
 const HI_SHUT = [
-  ".kkkkkkkkkkkkkkkk...........",
-  ".kkkkkkkkkkkkkkkk...........",
+  ".kkkkkkkkkkkkkkk............",
+  ".kkkkkkkkkkkkkkk............",
 ];
 
 const tonyHi = ([upper, lower]: readonly string[]): Pixels => [
-  "...kk........kk.............",
-  "...kkk......kkk.............",
-  "..kkkkk....kkkkk............",
-  "..kkkkkkkkkkkkkk............",
-  "..kkkkkkkkkkkkkk............",
-  ".kkkkkkkkkkkkkkkk...........",
+  "...kk.......kk..............",
+  "...kkk.....kkk..............",
+  "..kkkkk...kkkkk.............",
+  "..kkkkkkkkkkkkk.............",
+  "..kkkkkkkkkkkkk.............",
+  ".kkkkkkkkkkkkkkk............",
   upper ?? "",
   lower ?? "",
-  ".kkkkkkkkkkkkkkkk...........",
-  "..kkkkkkkkkkkkkk............",
-  "...kkkkkkkkkkkk.............",
+  ".kkkkkkkkkkkkkkk............",
+  "..kkkkkkkkkkkkk.............",
+  "...kkkkkkkkkkk..............",
   ".....kkkkkkkk...............",
   "....kkkkkkkkkkk.............",
   "....kkkkkkkkkkkk............",
