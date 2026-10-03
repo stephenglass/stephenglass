@@ -1,0 +1,95 @@
+---
+import "@/styles/global.css";
+
+import { Font } from "astro:assets";
+
+import SiteFooter from "@/components/SiteFooter.astro";
+import SiteHeader from "@/components/SiteHeader.astro";
+import { site } from "@/data/site";
+import { absoluteUrl, withBase } from "@/lib/url";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = `${site.name} - SWE`, description = site.description } =
+  Astro.props;
+
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
+const socialImageUrl = absoluteUrl("og.png", Astro.site);
+
+const personJsonLd = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: site.name,
+  jobTitle: site.role,
+  url: absoluteUrl("", Astro.site),
+  email: `mailto:${site.email}`,
+  image: socialImageUrl,
+  sameAs: [site.githubUrl, site.linkedinUrl, site.tonelabsUrl],
+});
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <link rel="icon" type="image/svg+xml" href={withBase("favicon.svg")} />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href={withBase("favicon-32x32.png")}
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href={withBase("apple-touch-icon.png")}
+    />
+    <meta name="theme-color" content={site.themeColor} />
+
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Stephen Glass, Software Engineer, beside Tony, a black pixel-art cat."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json" set:html={personJsonLd} />
+    <Font cssVariable="--font-instrument-sans" preload />
+  </head>
+
+  <body>
+    <a
+      href="#main"
+      class="bg-ink text-paper fixed top-3 left-3 z-50 -translate-y-24 px-4 py-2 transition-transform focus-visible:translate-y-0"
+    >
+      Skip to content
+    </a>
+
+    <SiteHeader />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <SiteFooter />
+
+    <script>
+      import "@/scripts/console";
+    </script>
+  </body>
+</html>

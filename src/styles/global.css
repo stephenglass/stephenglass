@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+/*
+ * stephen.glass shares tonelabs' philosophy but not its look:
+ * solid fields, no gradients, no shadows, no rounded corners; hairline
+ * frames; Instrument Sans on one editorial scale; one accent, used only as
+ * a whisper. Tonelabs is obsidian-first with amber. This site is
+ * paper-first with aqua, and obsidian appears once, as Tony's stage.
+ */
+@theme {
+  --color-paper: #f7f6f4;
+  --color-ink: #16131a;
+  --color-ink-dim: #5c5762;
+  --color-obsidian: #131116;
+  --color-bone: #f6ecdd;
+  --color-bone-dim: #b8ad9f;
+  /* Aqua: decoration (underlines, dots, hearts). */
+  --color-aqua: #2fa3c4;
+  /* Aqua dark enough for text on paper (AA). */
+  --color-aqua-ink: #17708a;
+
+  --font-body:
+    var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    /* Tony's fill and rim for inline sprites (the rim is for dark fields). */
+    --tony: #16131a;
+    --tony-rim: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    @apply bg-paper font-body text-ink antialiased;
+    font-size: 1.1875rem;
+    font-weight: 450;
+    line-height: 1.55;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2 {
+    @apply text-balance;
+    font-weight: 650;
+    letter-spacing: -0.04em;
+    line-height: 0.98;
+  }
+
+  p {
+    @apply text-pretty;
+  }
+
+  ::selection {
+    @apply bg-aqua text-ink;
+  }
+
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+}
+
+@utility link-underline {
+  text-decoration-line: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+
+  &:hover {
+    text-decoration-thickness: 3px;
+  }
+}
+
+@utility wrap {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 75rem;
+  padding-inline: 1.25rem;
+
+  @media (width >= 48rem) {
+    padding-inline: 2.5rem;
+  }
+}
+
+/* Pixel art scales by whole cells; never smooth it. */
+@utility pixelated {
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+}
+
+/* The name sets itself: each letter rises out of a soft blur, once. */
+@keyframes blur-in {
+  from {
+    opacity: 0;
+    filter: blur(12px);
+    translate: 0 0.12em;
+  }
+  40% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes emoji-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.7);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -30px) scale(1.1);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(-50%, -60px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -80px) scale(0.8);
+  }
+}
+
+@keyframes emoji-fade {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -40px);
+  }
+  20%,
+  70% {
+    opacity: 1;
+    transform: translate(-50%, -40px);
+  }
+}
+
+@keyframes purr {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(0.5px, -0.5px);
+  }
+  75% {
+    transform: translate(-0.5px, 0.5px);
+  }
+}

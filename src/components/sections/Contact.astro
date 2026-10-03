@@ -1,0 +1,89 @@
+---
+/**
+ * The address, large. A Copy button (shown once JS loads) sits beside it.
+ */
+import PixelGlyph from "@/components/PixelGlyph.astro";
+import { site } from "@/data/site";
+---
+
+<section
+  id="contact"
+  class="pt-24 pb-20 md:pt-32 md:pb-28"
+  aria-labelledby="contact-title"
+  data-contact
+>
+  <div class="wrap">
+    <h2 id="contact-title" class="text-ink-dim text-base font-semibold">
+      Say hello.
+    </h2>
+    <div class="mt-6 flex flex-wrap items-center gap-x-8 gap-y-5">
+      <a
+        href={`mailto:${site.email}`}
+        data-email-address
+        class="link-underline decoration-ink/20 hover:decoration-aqua focus-visible:decoration-aqua ease-out-soft text-[clamp(1.75rem,4.4vw,3.25rem)] leading-tight font-semibold tracking-[-0.03em] break-all transition-[text-decoration-color,text-decoration-thickness] duration-300"
+      >
+        {site.email}
+      </a>
+      <button
+        type="button"
+        hidden
+        data-copy={site.email}
+        class="border-ink/15 text-ink-dim hover:text-ink hover:border-ink/40 focus-visible:text-ink ease-out-soft flex items-center gap-2 border px-3.5 py-2 text-base font-semibold transition-colors duration-300"
+      >
+        <PixelGlyph name="copy" data-icon="copy" class="size-4" />
+        <PixelGlyph
+          name="check"
+          data-icon="check"
+          class="text-aqua-ink hidden size-4"
+        />
+        <span data-label>Copy</span>
+      </button>
+    </div>
+    <p data-copy-status role="status" class="sr-only"></p>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-contact]").forEach((root) => {
+    const button = root.querySelector<HTMLButtonElement>("[data-copy]");
+    const label = root.querySelector<HTMLElement>("[data-label]");
+    const status = root.querySelector<HTMLElement>("[data-copy-status]");
+    const address = root.querySelector<HTMLElement>("[data-email-address]");
+    if (!button || !label || !status || !address) return;
+
+    let timer = 0;
+    const icons = (copied: boolean): void => {
+      button
+        .querySelector("[data-icon=copy]")
+        ?.classList.toggle("hidden", copied);
+      button
+        .querySelector("[data-icon=check]")
+        ?.classList.toggle("hidden", !copied);
+    };
+
+    button.hidden = false;
+    button.addEventListener("click", async () => {
+      window.clearTimeout(timer);
+      try {
+        await navigator.clipboard.writeText(button.dataset.copy ?? "");
+        label.textContent = "Copied.";
+        status.textContent = "Email address copied.";
+        icons(true);
+      } catch {
+        // No clipboard access: select the address so ⌘C / Ctrl+C works.
+        const range = document.createRange();
+        range.selectNodeContents(address);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        label.textContent = "Press ⌘C.";
+        status.textContent = "Email address selected. Copy it now.";
+      }
+      timer = window.setTimeout(() => {
+        label.textContent = "Copy";
+        status.textContent = "";
+        icons(false);
+      }, 1800);
+    });
+  });
+</script>

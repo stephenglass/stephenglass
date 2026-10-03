@@ -1,0 +1,27 @@
+---
+/**
+ * The hero's glass fins (src/scripts/hero/glass-fins.ts): tonelabs' beams
+ * rebuilt in glass, bone on obsidian with a sea-glass fringe. Decorative
+ * only.
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<canvas
+  data-glass-fins
+  data-animating="false"
+  aria-hidden="true"
+  class:list={["pixelated block h-full w-full", className]}
+></canvas>
+
+<script>
+  import { mountGlassFins } from "@/scripts/hero/glass-fins";
+
+  document
+    .querySelectorAll<HTMLCanvasElement>("canvas[data-glass-fins]")
+    .forEach((canvas) => mountGlassFins(canvas));
+</script>

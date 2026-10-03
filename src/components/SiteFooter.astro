@@ -1,0 +1,26 @@
+---
+import PixelGlyph from "@/components/PixelGlyph.astro";
+import { site } from "@/data/site";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="text-ink-dim">
+  <div class="wrap">
+    <div class="border-ink/10 flex items-center justify-between gap-6 border-t py-10 text-base">
+      <p>
+        © {year} {site.name}
+      </p>
+      <a
+        href={site.sourceUrl}
+        class="group hover:text-ink focus-visible:text-ink ease-out-soft -m-2 flex items-center gap-2 p-2 font-semibold transition-colors duration-300"
+      >
+        <PixelGlyph
+          name="github"
+          class="ease-out-soft size-4 opacity-60 transition-opacity duration-300 group-hover:opacity-100"
+        />
+        View source
+      </a>
+    </div>
+  </div>
+</footer>

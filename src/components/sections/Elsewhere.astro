@@ -1,0 +1,48 @@
+---
+import PixelGlyph from "@/components/PixelGlyph.astro";
+import { site } from "@/data/site";
+
+const links: readonly { label: string; href: string; note: string }[] = [
+  { label: "GitHub", href: site.githubUrl, note: site.githubHandle },
+  { label: "LinkedIn", href: site.linkedinUrl, note: site.linkedinHandle },
+  { label: "Tonelabs", href: site.tonelabsUrl, note: "tonelabs.io" },
+];
+---
+
+<section
+  id="elsewhere"
+  class="bg-obsidian text-bone py-24 md:py-32"
+  aria-labelledby="elsewhere-title"
+>
+  <div class="wrap">
+    <div class="grid gap-y-10 md:grid-cols-12 md:gap-x-10">
+      <h2
+        id="elsewhere-title"
+        class="text-[clamp(2.5rem,5vw,4.25rem)] md:col-span-5"
+      >
+        Elsewhere.
+      </h2>
+      <ul class="border-white/10 border-t md:col-span-6 md:col-start-7">
+        {links.map((link) => (
+          <li class="border-white/10 border-b">
+            <a
+              href={link.href}
+              class="group flex items-baseline justify-between gap-6 py-5"
+            >
+              <span class="decoration-aqua/0 group-hover:decoration-aqua group-focus-visible:decoration-aqua link-underline ease-out-soft text-[clamp(1.375rem,2.2vw,1.75rem)] leading-snug font-semibold tracking-[-0.025em] transition-[text-decoration-color] duration-300">
+                {link.label}
+              </span>
+              <span class="text-bone-dim flex items-center gap-3 text-base">
+                {link.note}
+                <PixelGlyph
+                  name="arrow"
+                  class="group-hover:text-aqua ease-out-soft size-3 transition-[color,translate] duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:translate-none"
+                />
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>

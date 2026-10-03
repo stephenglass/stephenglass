@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Astro
+.astro/
+
+# Playwright
+playwright-report/
+test-results/

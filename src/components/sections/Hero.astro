@@ -1,0 +1,84 @@
+---
+import GlassFins from "@/components/GlassFins.astro";
+import PetTony from "@/components/PetTony.astro";
+import { site } from "@/data/site";
+
+/**
+ * Letters for the blur-in, grouped by word so a line never breaks inside
+ * one. `index` staggers each letter's start.
+ */
+let index = 0;
+const words = site.name
+  .split(" ")
+  .map((word) => [...word].map((letter) => ({ letter, index: index++ })));
+---
+
+<section
+  class="hero bg-obsidian text-bone relative flex min-h-[clamp(34rem,84svh,52rem)] items-center overflow-hidden pt-32 pb-24"
+  aria-labelledby="hero-title"
+>
+  <GlassFins class="absolute inset-0" />
+
+  <div class="wrap relative">
+    <h1
+      id="hero-title"
+      class="name text-[clamp(3rem,9vw,7.5rem)] leading-[0.92] font-semibold tracking-[-0.03em]"
+    >
+      <span class="sr-only">{site.name}</span>
+      {/* Set lowercase, like tonelabs' wordmark; the real name stays for SEO and screen readers. */}
+      <span aria-hidden="true" class="lowercase">
+        {words.map((word, w) => (
+          <>
+            {w > 0 && " "}
+            <span class="word">
+              {word.map(({ letter, index }) => (
+                <span style={`--i: ${index}`}>{letter}</span>
+              ))}
+            </span>
+          </>
+        ))}
+      </span>
+    </h1>
+    <p
+      class="subline mt-6 text-[clamp(1.5rem,3.2vw,2.5rem)] leading-tight font-semibold tracking-[-0.035em] lowercase md:mt-8"
+      style={`--i: ${index + 4}`}
+    >
+      {site.role}.
+    </p>
+  </div>
+
+  <div class="absolute right-5 bottom-6 md:right-10 md:bottom-8">
+    <PetTony />
+  </div>
+</section>
+
+<style>
+  .hero {
+    /* A black cat needs a rim to read on obsidian. */
+    --tony: #0b0a0d;
+    --tony-rim: rgb(246 236 221 / 0.45);
+  }
+
+  /* Instrument Sans, a little condensed: the name's display voice. */
+  .name {
+    font-stretch: 85%;
+  }
+
+  .word {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .word > span {
+    display: inline-block;
+  }
+
+  /* Slow and soft: about two seconds for the whole name to settle. */
+  @media (prefers-reduced-motion: no-preference) {
+    .word > span,
+    .subline {
+      animation: blur-in 1400ms var(--ease-out-soft) backwards;
+      animation-delay: calc(150ms + var(--i) * 70ms);
+    }
+  }
+</style>

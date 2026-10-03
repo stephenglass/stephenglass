@@ -1,0 +1,42 @@
+---
+/**
+ * A multi-colour sprite from src/lib/sprites.ts as inline SVG. Tony's body
+ * and rim read the `--tony` and `--tony-rim` theme variables.
+ */
+import { sizeOf, toRuns, type Pixels } from "@/lib/pixels";
+import { PALETTE } from "@/lib/sprites";
+
+interface Props {
+  pixels: Pixels;
+  class?: string;
+  [attribute: `data-${string}`]: string | boolean | undefined;
+}
+
+const { pixels, class: className, ...rest } = Astro.props;
+const { width, height } = sizeOf(pixels);
+
+const FILLS: Readonly<Record<string, string>> = {
+  ...PALETTE,
+  k: "var(--tony)",
+  o: "var(--tony-rim)",
+  z: "currentColor",
+};
+---
+
+<svg
+  class={className}
+  viewBox={`0 0 ${width} ${height}`}
+  shape-rendering="crispEdges"
+  aria-hidden="true"
+  {...rest}
+>
+  {toRuns(pixels).map((run) => (
+    <rect
+      x={run.x}
+      y={run.y}
+      width={run.width}
+      height="1"
+      fill={FILLS[run.key]}
+    />
+  ))}
+</svg>
