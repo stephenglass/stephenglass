@@ -4,7 +4,7 @@ import "@/styles/global.css";
 import { Font } from "astro:assets";
 
 import { site } from "@/data/site";
-import { LAYOUT_KEY, LAYOUTS } from "@/lib/layout";
+import { FULL_BY_DEFAULT, LAYOUT_KEY, LAYOUTS } from "@/lib/layout";
 import { absoluteUrl, withBase } from "@/lib/url";
 
 interface Props {
@@ -67,13 +67,28 @@ const personJsonLd = JSON.stringify({
 
     <script type="application/ld+json" set:html={personJsonLd} />
     <Font cssVariable="--font-instrument-sans" preload />
-    <!-- Apply a remembered layout (LayoutSwitch) before first paint. -->
-    <script is:inline define:vars={{ key: LAYOUT_KEY, layouts: LAYOUTS }}>
+    <!--
+      Set the layout before first paint: the visitor's chosen layout, else
+      Auto's pick for this screen (resolveLayout in src/lib/layout.ts).
+      LayoutSwitch keeps Auto in step as the screen changes shape.
+    -->
+    <script
+      is:inline
+      define:vars={{
+        key: LAYOUT_KEY,
+        layouts: LAYOUTS,
+        fullByDefault: FULL_BY_DEFAULT,
+      }}
+    >
+      let stored = null;
       try {
-        const layout = localStorage.getItem(key);
-        if (layouts.includes(layout))
-          document.documentElement.dataset.layout = layout;
+        stored = localStorage.getItem(key);
       } catch {}
+      document.documentElement.dataset.layout = layouts.includes(stored)
+        ? stored
+        : matchMedia(fullByDefault).matches
+          ? "full"
+          : "compact";
     </script>
   </head>
 

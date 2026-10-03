@@ -69,6 +69,30 @@ test.describe("Home page", () => {
     expect(html).not.toMatch(/\b(founder|founded|studio|games?)\b/);
   });
 
+  test("shows each link's destination, down to 320px wide", async ({
+    page,
+  }) => {
+    for (const width of [page.viewportSize()?.width ?? 0, 320]) {
+      await page.setViewportSize({ width, height: 800 });
+      for (const [i, detail] of [
+        "@stephenglass",
+        "contact@stephen.glass",
+        "tonelabs.io",
+      ].entries())
+        await expect(links(page).nth(i).getByText(detail)).toBeVisible();
+      const label = await box(links(page).nth(1).getByText("Email"));
+      const destination = await box(
+        links(page).nth(1).getByText("contact@stephen.glass"),
+      );
+      // Laid out beside the label, not just kept for screen readers (1px).
+      expect(destination.width).toBeGreaterThan(100);
+      expect(destination.x).toBeGreaterThan(label.x + label.width);
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth),
+      ).toBeLessThanOrEqual(width);
+    }
+  });
+
   test("nothing overflows the width", async ({ page }) => {
     const { scrollWidth, innerWidth } = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
@@ -142,7 +166,7 @@ test.describe("Home page", () => {
   test("tab order follows the page", async ({ page, isMobile }) => {
     test.skip(isMobile, "keyboard order is checked on desktop");
     const names: string[] = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 8; i++) {
       await page.keyboard.press("Tab");
       names.push(
         await page.evaluate(() => {
@@ -161,34 +185,76 @@ test.describe("Home page", () => {
       "GitHub",
       "Email",
       "Tonelabs",
+      "Auto",
       "Compact",
       "Full",
     ]);
   });
 
-  test("switches between compact and full, and remembers", async ({ page }) => {
+  test("on auto, full on portrait and squarish screens, compact on wide ones", async ({
+    page,
+  }) => {
     const html = page.locator("html");
-    const compact = page.getByRole("button", { name: "Compact" });
-    const full = page.getByRole("button", { name: "Full" });
-    await expect(html).not.toHaveAttribute("data-layout", /./);
-    await expect(compact).toHaveAttribute("aria-pressed", "true");
+    const auto = page.getByRole("button", { name: "Auto" });
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.reload();
+    await expect(auto).toHaveAttribute("aria-pressed", "true");
+    await expect(html).toHaveAttribute("data-layout", "compact");
+
+    // Auto follows the screen as it changes shape.
+    await page.setViewportSize({ width: 1200, height: 1000 });
+    await expect(html).toHaveAttribute("data-layout", "full");
+
+    // Squarish but past 100rem: full's rows would run far past the name.
+    await page.setViewportSize({ width: 1700, height: 1400 });
+    await expect(html).toHaveAttribute("data-layout", "compact");
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.reload();
+    await expect(auto).toHaveAttribute("aria-pressed", "true");
+    await expect(html).toHaveAttribute("data-layout", "full");
+    const tonelabs = await box(links(page).nth(2));
+    expect(844 - (tonelabs.y + tonelabs.height)).toBeLessThan(48);
+  });
+
+  test("switches layouts, remembers, and goes back to auto", async ({
+    page,
+  }) => {
+    const html = page.locator("html");
+    const button = (name: string) =>
+      page.getByRole("button", { name, exact: true });
+    const pressed = (name: string) =>
+      expect(button(name)).toHaveAttribute("aria-pressed", "true");
+    const initial = (await html.getAttribute("data-layout")) ?? "";
+    // Pick the layout auto didn't.
+    const [other, Other] =
+      initial === "full" ? ["compact", "Compact"] : ["full", "Full"];
+    await pressed("Auto");
 
     const nameBefore = await page.locator("h1").boundingBox();
-    await full.click();
-    await expect(html).toHaveAttribute("data-layout", "full");
-    await expect(full).toHaveAttribute("aria-pressed", "true");
-    await expect(compact).toHaveAttribute("aria-pressed", "false");
+    await button(Other).click();
+    await expect(html).toHaveAttribute("data-layout", other);
+    await pressed(Other);
+    await expect(button("Auto")).toHaveAttribute("aria-pressed", "false");
     const nameAfter = await page.locator("h1").boundingBox();
     expect(nameAfter?.y).not.toBe(nameBefore?.y);
 
     await page.reload();
-    await expect(html).toHaveAttribute("data-layout", "full");
-    await expect(full).toHaveAttribute("aria-pressed", "true");
+    await expect(html).toHaveAttribute("data-layout", other);
+    await pressed(Other);
 
-    await compact.click();
+    // A choice holds when the screen changes shape.
+    const { width, height } = page.viewportSize() ?? { width: 0, height: 0 };
+    await page.setViewportSize({ width: height, height: width });
+    await expect(html).toHaveAttribute("data-layout", other);
+    await page.setViewportSize({ width, height });
+
+    await button("Auto").click();
+    await expect(html).toHaveAttribute("data-layout", initial);
     await page.reload();
-    await expect(html).toHaveAttribute("data-layout", "compact");
-    await expect(compact).toHaveAttribute("aria-pressed", "true");
+    await expect(html).toHaveAttribute("data-layout", initial);
+    await pressed("Auto");
   });
 
   test("the Tonelabs dither is decorative and drifts", async ({ page }) => {

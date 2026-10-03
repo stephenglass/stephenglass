@@ -1,10 +1,11 @@
 ---
 /**
- * Compact · Full, top right. Sets `html[data-layout]` and remembers the
- * choice for this visitor; `Layout.astro` applies it before first paint.
- * JS-only, so it starts hidden.
+ * Auto · Compact · Full, top right. Sets `html[data-layout]`: Auto follows
+ * the screen (`src/lib/layout.ts`), and Compact or Full is remembered for this
+ * visitor. `Layout.astro` applies the layout before first paint. JS-only, so
+ * it starts hidden.
  */
-import { LAYOUTS } from "@/lib/layout";
+import { LAYOUT_CHOICES } from "@/lib/layout";
 
 const label = (layout: string): string =>
   layout[0]?.toUpperCase() + layout.slice(1);
@@ -17,14 +18,14 @@ const label = (layout: string): string =>
   aria-label="Layout"
   class="absolute top-4 right-4 flex gap-4 text-sm font-semibold md:top-6 md:right-10"
 >
-  {LAYOUTS.map((layout) => (
+  {LAYOUT_CHOICES.map((choice) => (
     <button
       type="button"
-      data-layout-option={layout}
+      data-layout-option={choice}
       aria-pressed="false"
       class="layout-option underline-soft text-ink-dim hover:text-ink cursor-pointer underline-offset-[0.3em]"
     >
-      {label(layout)}
+      {label(choice)}
     </button>
   ))}
 </div>
@@ -37,37 +38,49 @@ const label = (layout: string): string =>
 </style>
 
 <script>
-  import { LAYOUT_KEY, LAYOUTS } from "@/lib/layout";
+  import { FULL_BY_DEFAULT, LAYOUT_KEY, resolveLayout } from "@/lib/layout";
 
   const root = document.querySelector<HTMLElement>("[data-layout-switch]");
   const buttons = [
     ...(root?.querySelectorAll<HTMLButtonElement>("[data-layout-option]") ??
       []),
   ];
+  const fullByDefault = matchMedia(FULL_BY_DEFAULT);
 
-  const sync = (): void => {
-    const current = document.documentElement.dataset.layout ?? LAYOUTS[0];
+  // The visitor's layout, or null for auto. Kept here as well as in storage,
+  // which can be blocked; the switch still works for this visit.
+  let choice: string | null = null;
+  try {
+    choice = localStorage.getItem(LAYOUT_KEY);
+  } catch {}
+
+  const apply = (): void => {
+    const layout = resolveLayout(choice, fullByDefault.matches);
+    document.documentElement.dataset.layout = layout;
+    const pressed = layout === choice ? layout : "auto";
     for (const button of buttons)
       button.setAttribute(
         "aria-pressed",
-        String(button.dataset.layoutOption === current),
+        String(button.dataset.layoutOption === pressed),
       );
   };
 
   for (const button of buttons)
     button.addEventListener("click", () => {
-      const layout = button.dataset.layoutOption ?? LAYOUTS[0];
-      document.documentElement.dataset.layout = layout;
+      const option = button.dataset.layoutOption;
+      choice = option === "auto" ? null : (option ?? null);
       try {
-        localStorage.setItem(LAYOUT_KEY, layout);
-      } catch {
-        // Storage can be blocked; the switch still works for this visit.
-      }
-      sync();
+        if (choice) localStorage.setItem(LAYOUT_KEY, choice);
+        else localStorage.removeItem(LAYOUT_KEY);
+      } catch {}
+      apply();
     });
 
+  // On auto, follow the screen as it rotates or resizes.
+  fullByDefault.addEventListener("change", apply);
+
   if (root) {
-    sync();
+    apply();
     root.hidden = false;
   }
 </script>
