@@ -51,13 +51,13 @@ export const TONY_SLEEP: Pixels = TONY_BLINK;
 
 /*
  * Tony, larger (28×28): the same cat with room for a real silhouette.
- * Softly rounded ears and head, almond eyes, a neck, a haunch rising to the
+ * Softly rounded ears and head, level 2×2 eyes, a neck, a haunch rising to the
  * right, front paws parted by a seam, and a long tail curling up beside him.
  * On the page he is lit with `withLight` (see TONY_LIT_*).
  */
 const HI_OPEN = [
   ".kkkkwwkkkwwkkkk............",
-  ".kkkkkwkkkwkkkkk............",
+  ".kkkkwwkkkwwkkkk............",
 ];
 const HI_SHUT = [
   ".kkkkkkkkkkkkkkk............",
