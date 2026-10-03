@@ -69,6 +69,30 @@ test.describe("Home page", () => {
     expect(html).not.toMatch(/\b(founder|founded|studio|games?)\b/);
   });
 
+  test("shows each link's destination, down to 320px wide", async ({
+    page,
+  }) => {
+    for (const width of [page.viewportSize()?.width ?? 0, 320]) {
+      await page.setViewportSize({ width, height: 800 });
+      for (const [i, detail] of [
+        "@stephenglass",
+        "contact@stephen.glass",
+        "tonelabs.io",
+      ].entries())
+        await expect(links(page).nth(i).getByText(detail)).toBeVisible();
+      const label = await box(links(page).nth(1).getByText("Email"));
+      const destination = await box(
+        links(page).nth(1).getByText("contact@stephen.glass"),
+      );
+      // Laid out beside the label, not just kept for screen readers (1px).
+      expect(destination.width).toBeGreaterThan(100);
+      expect(destination.x).toBeGreaterThan(label.x + label.width);
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth),
+      ).toBeLessThanOrEqual(width);
+    }
+  });
+
   test("nothing overflows the width", async ({ page }) => {
     const { scrollWidth, innerWidth } = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
