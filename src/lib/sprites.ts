@@ -1,6 +1,7 @@
 /**
  * Tony, drawn as pixel rows (see src/lib/pixels.ts). Keys: k body, w eye,
- * d dithered light (added by `withLight`), s seam, z sleep mark.
+ * d dithered light (added by `withLight`), s seam, z sleep mark; r and q
+ * are the laser dot's core and halo.
  *
  * Pure data: shared by build-time SVGs, the favicon and the brand-asset script.
  */
@@ -13,6 +14,8 @@ export const PALETTE: Readonly<Record<string, string>> = {
   d: "#3d3843",
   s: "#3d3843",
   z: "#16131a",
+  r: "#e5281e",
+  q: "#f29a92",
 };
 
 /*
@@ -59,6 +62,11 @@ const HI_OPEN = [
   ".kkkkwwkkkwwkkkk............",
   ".kkkkwwkkkwwkkkk............",
 ];
+/* Eyes one pixel left: watching the laser dot. */
+const HI_LEFT = [
+  ".kkkwwkkkwwkkkkk............",
+  ".kkkwwkkkwwkkkkk............",
+];
 const HI_SHUT = [
   ".kkkkkkkkkkkkkkk............",
   ".kkkkkkkkkkkkkkk............",
@@ -97,6 +105,7 @@ const tonyHi = ([upper, lower]: readonly string[]): Pixels => [
 
 export const TONY_HI_SIT: Pixels = tonyHi(HI_OPEN);
 export const TONY_HI_BLINK: Pixels = tonyHi(HI_SHUT);
+export const TONY_HI_LOOK_LEFT: Pixels = tonyHi(HI_LEFT);
 
 /** 4×4 Bayer matrix, values 0–15. */
 const BAYER_4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
@@ -136,8 +145,15 @@ export function withLight(
   );
 }
 
+/**
+ * The laser pointer's dot (5×5): a red core with a sparse 1-bit halo, the
+ * glow drawn the same way as Tony's light.
+ */
+export const LASER: Pixels = [".q.q.", "qrrrq", ".rrr.", "qrrrq", ".q.q."];
+
 export const ZZ: Pixels = ["zzzz", "..z.", ".z..", "zzzz"];
 
 /** Tony as the page shows him: lit from the top right in dithered grey. */
 export const TONY_LIT_SIT: Pixels = withLight(TONY_HI_SIT, 4, 0.7);
 export const TONY_LIT_BLINK: Pixels = withLight(TONY_HI_BLINK, 4, 0.7);
+export const TONY_LIT_LOOK_LEFT: Pixels = withLight(TONY_HI_LOOK_LEFT, 4, 0.7);

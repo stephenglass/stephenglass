@@ -2,8 +2,10 @@
  * Pet Tony: every pet floats a heart and makes him wiggle. Milestones carry
  * over from the original site: a 🐀 every 10th pet, a 🐟 every 20th, a hop
  * every 20th, a spin every 30th, a "meow." every 15th and a 🐈‍⬛ burst every
- * 50th. Hovering or focusing a while makes him purr.
+ * 50th. Hovering or focusing a while makes him purr. At rest he looks
+ * whichever way the laser dot tells him (a `tony:gaze` event).
  */
+import type { Gaze } from "@/lib/laser";
 import { burst } from "@/scripts/burst";
 
 const reducedMotion = window.matchMedia(
@@ -48,8 +50,9 @@ function initPet(root: HTMLElement): void {
   if (!button || !sprite || !layer || !count || !bubble) return;
 
   let pets = 0;
-  type Frame = "sit" | "blink" | "happy";
+  type Frame = "sit" | "look-left" | "blink" | "happy";
   let mood: Frame = "sit";
+  let gaze: Gaze = "ahead";
   let happyTimer = 0;
   let bubbleTimer = 0;
   let purrTimer = 0;
@@ -62,6 +65,14 @@ function initPet(root: HTMLElement): void {
         svg.toggleAttribute("data-active", svg.dataset.frame === frame),
       );
   };
+
+  const rest = (): Frame => (gaze === "ahead" ? "sit" : `look-${gaze}`);
+  const resting = (): boolean => mood !== "blink" && mood !== "happy";
+
+  root.addEventListener("tony:gaze", (event) => {
+    gaze = (event as CustomEvent<Gaze>).detail;
+    if (resting()) show(rest());
+  });
 
   const float = (emoji: string): void => {
     const el = document.createElement("span");
@@ -90,7 +101,7 @@ function initPet(root: HTMLElement): void {
 
     show("happy");
     window.clearTimeout(happyTimer);
-    happyTimer = window.setTimeout(() => show("sit"), 400);
+    happyTimer = window.setTimeout(() => show(rest()), 400);
 
     if (pets % 15 === 0) {
       bubble.hidden = false;
@@ -122,9 +133,9 @@ function initPet(root: HTMLElement): void {
   // Blink now and then.
   if (!reducedMotion) {
     const blink = (): void => {
-      if (mood === "sit" && !document.hidden) {
+      if (resting() && !document.hidden) {
         show("blink");
-        window.setTimeout(() => mood === "blink" && show("sit"), 140);
+        window.setTimeout(() => mood === "blink" && show(rest()), 140);
       }
       window.setTimeout(blink, 2500 + Math.random() * 3500);
     };

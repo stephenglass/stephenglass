@@ -1,0 +1,220 @@
+---
+/**
+ * A laser pointer's dot that now and then plays along Tony's line, while he
+ * watches it (see src/lib/laser.ts). It stays to his left, stopping short of
+ * his paws. Decorative: it never reacts to the pointer, stops
+ * offscreen or in a hidden tab, and never shows under reduced motion or
+ * without JS.
+ */
+import PixelSprite from "@/components/PixelSprite.astro";
+import { LASER } from "@/lib/sprites";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<span
+  data-laser
+  data-animating="false"
+  hidden
+  aria-hidden="true"
+  class:list={["laser pointer-events-none", className]}
+>
+  <PixelSprite pixels={LASER} class="block h-auto w-full" />
+</span>
+
+<style>
+  .laser {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(5 * var(--tony-cell));
+    translate: 0 -50%;
+    opacity: 0;
+    transition: opacity 300ms var(--ease-out-soft);
+  }
+
+  .laser[data-on] {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  import {
+    gazeFor,
+    nextMove,
+    snap,
+    tremor,
+    visitPlan,
+    type Gaze,
+    type Move,
+  } from "@/lib/laser";
+
+  /**
+   * The dot is 5 cells across. Tony's ink starts 1 cell into his box and
+   * his eyes are centred 8.5 cells in.
+   */
+  const SIZE = 5;
+  const TONY_INK_COL = 1;
+  const EYE_COL = 8.5;
+  const TONY_COLS = 28;
+  /** The closest the dot comes to Tony's paws, in cells. */
+  const CLEARANCE = 2;
+  /** Near his paws he looks ahead, down at it; farther off, left. */
+  const DEAD_ZONE = 20;
+  const HYSTERESIS = 1.5;
+  const FIRST_VISIT_MS = 3000;
+  const FADE_MS = 300;
+  const TREMOR_MS = 120;
+
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+
+  const easeOut = (t: number): number => 1 - (1 - t) ** 4;
+  const easeInOut = (t: number): number => (1 - Math.cos(Math.PI * t)) / 2;
+
+  function initLaser(dot: HTMLElement): void {
+    const line = dot.parentElement;
+    const tony = line?.querySelector<HTMLElement>("[data-pet-root]");
+    if (!line || !tony) return;
+
+    let cell = 3;
+    let max = 0;
+    let eyeX = 0;
+
+    let visible = false;
+    let visiting = false;
+    let timer = 0;
+    let frame = 0;
+    let visitEnd = 0;
+    let gap = 0;
+
+    let x = 0;
+    let placed = Number.NaN;
+    let move: Move | null = null;
+    let moveFrom = 0;
+    let moveStart = 0;
+    let wobble = 0;
+    let nextWobble = 0;
+    let gaze: Gaze = "ahead";
+
+    const measure = (): void => {
+      cell =
+        parseFloat(getComputedStyle(line).getPropertyValue("--tony-cell")) || 3;
+      const lineBox = line.getBoundingClientRect();
+      const tonyBox = tony.getBoundingClientRect();
+      const tonyX = tonyBox.left - lineBox.left;
+      const paws = tonyX + TONY_INK_COL * cell;
+      max = Math.max(0, paws - (CLEARANCE + SIZE) * cell);
+      eyeX = tonyX + (tonyBox.width * EYE_COL) / TONY_COLS;
+    };
+
+    const track = (from: number) => ({ from, min: 0, max, cell });
+
+    const place = (px: number): void => {
+      if (px === placed) return;
+      placed = px;
+      dot.style.translate = `${px}px -50%`;
+    };
+
+    const look = (): void => {
+      const next = gazeFor(
+        visiting ? x + (SIZE * cell) / 2 : null,
+        eyeX,
+        DEAD_ZONE * cell,
+        gaze,
+        HYSTERESIS * cell,
+      );
+      if (next === gaze) return;
+      gaze = next;
+      tony.dispatchEvent(new CustomEvent("tony:gaze", { detail: gaze }));
+    };
+
+    const schedule = (delay: number): void => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(startVisit, delay);
+    };
+
+    const endVisit = (): void => {
+      cancelAnimationFrame(frame);
+      visiting = false;
+      move = null;
+      delete dot.dataset.on;
+      dot.dataset.animating = "false";
+      look();
+    };
+
+    const tick = (now: number): void => {
+      if (!move) return;
+      const t = (now - moveStart) / move.duration;
+      if (t < 0) {
+        // Still fading in.
+      } else if (t < 1) {
+        const eased = move.creep ? easeInOut(t) : easeOut(t);
+        x = snap(moveFrom + (move.to - moveFrom) * eased, track(x));
+      } else if (now < moveStart + move.duration + move.hold) {
+        if (now >= nextWobble) {
+          wobble = tremor(Math.random) * cell;
+          nextWobble = now + TREMOR_MS;
+        }
+        x = snap(move.to + wobble, track(x));
+      } else if (now >= visitEnd) {
+        endVisit();
+        schedule(gap);
+        return;
+      } else {
+        moveFrom = x;
+        move = nextMove(Math.random, track(x));
+        moveStart = now;
+        wobble = 0;
+      }
+      place(x);
+      look();
+      frame = requestAnimationFrame(tick);
+    };
+
+    function startVisit(): void {
+      timer = 0;
+      if (!visible || document.hidden) return;
+      measure();
+      const plan = visitPlan(Math.random);
+      const now = performance.now();
+      visiting = true;
+      visitEnd = now + plan.length;
+      gap = plan.gap;
+      x = snap(Math.random() * max, track(0));
+      place(x);
+      moveFrom = x;
+      move = nextMove(Math.random, track(x));
+      moveStart = now + FADE_MS;
+      dot.dataset.on = "";
+      dot.dataset.animating = "true";
+      frame = requestAnimationFrame(tick);
+    }
+
+    const update = (): void => {
+      if (visible && !document.hidden) {
+        if (!visiting && !timer) schedule(FIRST_VISIT_MS);
+      } else {
+        window.clearTimeout(timer);
+        timer = 0;
+        if (visiting) endVisit();
+      }
+    };
+
+    dot.hidden = false;
+    new ResizeObserver(measure).observe(line);
+    new IntersectionObserver(([entry]) => {
+      visible = entry?.isIntersecting ?? false;
+      update();
+    }).observe(line);
+    document.addEventListener("visibilitychange", update);
+  }
+
+  if (!reducedMotion)
+    document.querySelectorAll<HTMLElement>("[data-laser]").forEach(initLaser);
+</script>

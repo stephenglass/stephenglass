@@ -5,7 +5,11 @@
  * fills the width the caller gives him.
  */
 import PixelSprite from "@/components/PixelSprite.astro";
-import { TONY_LIT_BLINK, TONY_LIT_SIT } from "@/lib/sprites";
+import {
+  TONY_LIT_BLINK,
+  TONY_LIT_LOOK_LEFT,
+  TONY_LIT_SIT,
+} from "@/lib/sprites";
 
 interface Props {
   class?: string;
@@ -15,6 +19,7 @@ const { class: className } = Astro.props;
 
 const frames = [
   { name: "sit", pixels: TONY_LIT_SIT },
+  { name: "look-left", pixels: TONY_LIT_LOOK_LEFT },
   { name: "blink", pixels: TONY_LIT_BLINK },
   { name: "happy", pixels: TONY_LIT_BLINK },
 ];

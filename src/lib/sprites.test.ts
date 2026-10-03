@@ -3,11 +3,14 @@ import { test } from "node:test";
 
 import { sizeOf } from "./pixels.ts";
 import {
+  LASER,
   PALETTE,
   TONY_BLINK,
   TONY_HI_BLINK,
+  TONY_HI_LOOK_LEFT,
   TONY_HI_SIT,
   TONY_LIT_BLINK,
+  TONY_LIT_LOOK_LEFT,
   TONY_LIT_SIT,
   TONY_SIT,
   ZZ,
@@ -31,8 +34,23 @@ test("each Tony's frames share one silhouette", () => {
   }
 });
 
+test("Tony looks left by one pixel, nothing else changing", () => {
+  const shiftLeft = (pixels: readonly string[]): string =>
+    eyes(pixels)
+      .split("\n")
+      .map((row) => row.slice(1) + ".")
+      .join("\n");
+  for (const [sit, left] of [
+    [TONY_HI_SIT, TONY_HI_LOOK_LEFT],
+    [TONY_LIT_SIT, TONY_LIT_LOOK_LEFT],
+  ] as const) {
+    assert.equal(silhouette(left), silhouette(sit));
+    assert.equal(eyes(left), shiftLeft(sit));
+  }
+});
+
 test("rows are all the same width", () => {
-  for (const pixels of [TONY_SIT, TONY_HI_SIT, TONY_LIT_SIT]) {
+  for (const pixels of [TONY_SIT, TONY_HI_SIT, TONY_LIT_SIT, LASER]) {
     const { width } = sizeOf(pixels);
     for (const row of pixels) assert.equal(row.length, width);
   }
@@ -47,7 +65,14 @@ test("light keeps the silhouette and the eyes", () => {
 });
 
 test("every sprite key has a fill", () => {
-  for (const pixels of [TONY_SIT, TONY_LIT_SIT, TONY_LIT_BLINK, ZZ]) {
+  for (const pixels of [
+    TONY_SIT,
+    TONY_LIT_SIT,
+    TONY_LIT_BLINK,
+    TONY_LIT_LOOK_LEFT,
+    LASER,
+    ZZ,
+  ]) {
     for (const cell of pixels.join("").replaceAll(".", "")) {
       assert.ok(PALETTE[cell], `no fill for "${cell}"`);
     }

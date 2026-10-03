@@ -98,6 +98,50 @@ test.describe("Home page", () => {
     await expect(page.getByText("meow.")).toBeVisible();
   });
 
+  test("a laser dot visits now and then, and Tony watches it", async ({
+    page,
+  }) => {
+    await page.clock.install();
+    await page.goto("/");
+    const dot = page.locator("[data-laser]");
+    await expect(dot).toHaveAttribute("aria-hidden", "true");
+    await expect(dot).toHaveAttribute("data-animating", "false");
+
+    await page.clock.runFor(4000);
+    await expect(dot).toHaveAttribute("data-animating", "true");
+    await expect
+      .poll(async () => {
+        await page.clock.runFor(500);
+        return page
+          .locator("[data-pet-sprite] [data-active]")
+          .getAttribute("data-frame");
+      })
+      .toBe("look-left");
+
+    // The visit ends within 15s.
+    await page.clock.fastForward(16_000);
+    await page.clock.runFor(100);
+    await expect(dot).toHaveAttribute("data-animating", "false");
+  });
+
+  test("the laser dot never goes under Tony", async ({ page }) => {
+    // Every dart heads as far right as the dot may go.
+    await page.addInitScript(() => (Math.random = () => 0.999));
+    await page.clock.install();
+    await page.goto("/");
+    await page.clock.runFor(6000);
+    const dot = await page.locator("[data-laser]").boundingBox();
+    const tony = await page
+      .getByRole("button", { name: "Pet Tony" })
+      .boundingBox();
+    expect(dot && tony).toBeTruthy();
+    if (!dot || !tony) return;
+    // Tony's ink starts one cell (of 28) into his box.
+    const paws = tony.x + tony.width / 28;
+    expect(dot.x + dot.width).toBeLessThan(paws);
+    expect(dot.x + dot.width).toBeGreaterThan(paws - dot.width);
+  });
+
   test("tab order follows the page", async ({ page, isMobile }) => {
     test.skip(isMobile, "keyboard order is checked on desktop");
     const names: string[] = [];
@@ -160,6 +204,14 @@ test.describe("Home page", () => {
     await expect(canvas).toHaveAttribute("data-animating", "false");
   });
 
+  test("the laser dot stays away under reduced motion", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.clock.install();
+    await page.goto("/");
+    await page.clock.runFor(6000);
+    await expect(page.locator("[data-laser]")).toBeHidden();
+  });
+
   test("has no serious accessibility violations", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.reload();
@@ -181,5 +233,6 @@ test.describe("Without JavaScript", () => {
     for (const link of await links(page).all())
       await expect(link).toBeVisible();
     await expect(page.locator("[data-layout-switch]")).toBeHidden();
+    await expect(page.locator("[data-laser]")).toBeHidden();
   });
 });
