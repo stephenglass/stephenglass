@@ -111,6 +111,46 @@ test.describe("Home page", () => {
     await expect(page.getByText("meow.")).toBeVisible();
   });
 
+  test("what rises from Tony is pixel art, kept near him", async ({ page }) => {
+    const fixed = () =>
+      page.evaluate(
+        () =>
+          [...document.body.children].filter(
+            (el) => getComputedStyle(el).position === "fixed",
+          ).length,
+      );
+    const overlays = await fixed();
+    const tony = page.getByRole("button", { name: "Pet Tony" });
+    const before = await tony.boundingBox();
+    await tony.click();
+    const layer = page.locator("[data-pet-layer]");
+    await expect(layer.locator(".pet-particle svg").first()).toBeAttached();
+    expect(await layer.textContent()).not.toMatch(/\p{Extended_Pictographic}/u);
+
+    for (let i = 1; i < 50; i++) await tony.click();
+    expect(await fixed()).toBe(overlays);
+    await expect(layer.locator(".pet-particle")).toHaveCount(0, {
+      timeout: 3000,
+    });
+    expect(await tony.boundingBox()).toEqual(before);
+  });
+
+  test("under reduced motion Tony stays put when petted", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.reload();
+    await page.getByRole("button", { name: "Pet Tony" }).click();
+    await expect(page.locator(".pet-particle")).toHaveCount(1);
+    // Only the plain type may fade in; nothing travels.
+    const moving = await page.evaluate(
+      () =>
+        document
+          .querySelector("[data-pet-root]")
+          ?.getAnimations({ subtree: true })
+          .filter((animation) => !(animation instanceof CSSTransition)).length,
+    );
+    expect(moving).toBe(0);
+  });
+
   test("a laser dot visits now and then, and Tony watches it", async ({
     page,
   }) => {
@@ -153,6 +193,22 @@ test.describe("Home page", () => {
     const paws = tony.x + tony.width / 28;
     expect(dot.x + dot.width).toBeLessThan(paws);
     expect(dot.x + dot.width).toBeGreaterThan(paws - dot.width);
+  });
+
+  test("the laser dot keeps clear of Tony's pet count", async ({ page }) => {
+    await page.addInitScript(() => (Math.random = () => 0.999));
+    await page.clock.install();
+    await page.goto("/");
+    await page.getByRole("button", { name: "Pet Tony" }).click();
+    const count = page.locator("[data-pet-count]");
+    await expect(count).toHaveText("×1");
+    await untilLaserVisits(page);
+    await page.clock.runFor(1000);
+    const dot = await page.locator("[data-laser]").boundingBox();
+    const box = await count.boundingBox();
+    expect(dot && box).toBeTruthy();
+    if (!dot || !box) return;
+    expect(dot.x + dot.width).toBeLessThan(box.x);
   });
 
   test("tab order follows the page", async ({ page, isMobile }) => {

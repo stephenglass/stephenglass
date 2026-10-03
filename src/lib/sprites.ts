@@ -71,11 +71,29 @@ const HI_SHUT = [
   ".kkkkkkkkkkkkkkk............",
   ".kkkkkkkkkkkkkkk............",
 ];
+/* Content: eyes shut in a ^ while he is petted. */
+const HI_HAPPY = [
+  ".kkkkwwkkkwwkkkk............",
+  ".kkkwkkwkwkkwkkk............",
+];
 
-const tonyHi = ([upper, lower]: readonly string[]): Pixels => [
+/* Ears up, or the left one flicked flat for a moment. */
+const EARS_UP = [
   "...kk.......kk..............",
   "...kkk.....kkk..............",
   "..kkkkk...kkkkk.............",
+];
+const EARS_FLICK = [
+  "............kk..............",
+  "...........kkk..............",
+  ".kkkkkk...kkkkk.............",
+];
+
+const tonyHi = (
+  [upper, lower]: readonly string[],
+  ears: readonly string[] = EARS_UP,
+): Pixels => [
+  ...ears,
   "..kkkkkkkkkkkkk.............",
   "..kkkkkkkkkkkkk.............",
   ".kkkkkkkkkkkkkkk............",
@@ -106,6 +124,8 @@ const tonyHi = ([upper, lower]: readonly string[]): Pixels => [
 export const TONY_HI_SIT: Pixels = tonyHi(HI_OPEN);
 export const TONY_HI_BLINK: Pixels = tonyHi(HI_SHUT);
 export const TONY_HI_LOOK_LEFT: Pixels = tonyHi(HI_LEFT);
+export const TONY_HI_HAPPY: Pixels = tonyHi(HI_HAPPY);
+export const TONY_HI_EAR_FLICK: Pixels = tonyHi(HI_OPEN, EARS_FLICK);
 
 /** 4×4 Bayer matrix, values 0–15. */
 const BAYER_4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
@@ -153,7 +173,56 @@ export const LASER: Pixels = [".q.q.", "qrrrq", ".rrr.", "qrrrq", ".q.q."];
 
 export const ZZ: Pixels = ["zzzz", "..z.", ".z..", "zzzz"];
 
+/*
+ * What rises from Tony when he is petted, drawn on his grid: a heart, a
+ * mouse every 10th pet, a fish every 20th.
+ */
+export const HEART: Pixels = [
+  ".kk.kk.",
+  "kkkkkkk",
+  "kkkkkkk",
+  ".kkkkk.",
+  "..kkk..",
+  "...k...",
+];
+
+export const MOUSE: Pixels = [
+  "..kk......",
+  ".kkkkk....",
+  "kwkkkkk..k",
+  "kkkkkkkkk.",
+  ".k...k....",
+];
+
+export const FISH: Pixels = [
+  "..kkk...k",
+  ".kkkkk.kk",
+  "kwkkkkkkk",
+  ".kkkkk.kk",
+  "..kkk...k",
+];
+
+/**
+ * The pixels with a share `amount` (0–1) of their cells taken away in
+ * Bayer order, so a sprite dissolves the way the page's light is drawn.
+ * Each larger amount removes a superset of the cells.
+ */
+export function dissolve(pixels: Pixels, amount: number): Pixels {
+  return pixels.map((row, y) =>
+    [...row]
+      .map((cell, x) =>
+        amount * 16 > (BAYER_4[(y & 3) * 4 + (x & 3)] ?? 0) + 0.5 ? "." : cell,
+      )
+      .join(""),
+  );
+}
+
+/** The steps a particle dissolves through, from whole to nearly gone. */
+export const DISSOLVE_STAGES: readonly number[] = [0, 0.3, 0.55, 0.8];
+
 /** Tony as the page shows him: lit from the top right in dithered grey. */
 export const TONY_LIT_SIT: Pixels = withLight(TONY_HI_SIT, 4, 0.7);
 export const TONY_LIT_BLINK: Pixels = withLight(TONY_HI_BLINK, 4, 0.7);
 export const TONY_LIT_LOOK_LEFT: Pixels = withLight(TONY_HI_LOOK_LEFT, 4, 0.7);
+export const TONY_LIT_HAPPY: Pixels = withLight(TONY_HI_HAPPY, 4, 0.7);
+export const TONY_LIT_EAR_FLICK: Pixels = withLight(TONY_HI_EAR_FLICK, 4, 0.7);

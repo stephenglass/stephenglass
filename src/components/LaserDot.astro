@@ -81,6 +81,7 @@ const { class: className } = Astro.props;
   function initLaser(dot: HTMLElement): void {
     const line = dot.parentElement;
     const tony = line?.querySelector<HTMLElement>("[data-pet-root]");
+    const count = tony?.querySelector<HTMLElement>("[data-pet-count]");
     if (!line || !tony) return;
 
     let cell = 3;
@@ -109,8 +110,11 @@ const { class: className } = Astro.props;
       const lineBox = line.getBoundingClientRect();
       const tonyBox = tony.getBoundingClientRect();
       const tonyX = tonyBox.left - lineBox.left;
-      const paws = tonyX + TONY_INK_COL * cell;
-      max = Math.max(0, paws - (CLEARANCE + SIZE) * cell);
+      // Stop short of his paws, or of his pet count once it shows.
+      let end = tonyX + TONY_INK_COL * cell;
+      if (count && !count.hidden)
+        end = Math.min(end, count.getBoundingClientRect().left - lineBox.left);
+      max = Math.max(0, end - (CLEARANCE + SIZE) * cell);
       eyeX = tonyX + (tonyBox.width * EYE_COL) / TONY_COLS;
     };
 
@@ -208,7 +212,9 @@ const { class: className } = Astro.props;
     };
 
     dot.hidden = false;
-    new ResizeObserver(measure).observe(line);
+    const resize = new ResizeObserver(measure);
+    resize.observe(line);
+    if (count) resize.observe(count);
     new IntersectionObserver(([entry]) => {
       visible = entry?.isIntersecting ?? false;
       update();
